@@ -10,6 +10,10 @@ var client = redis.createClient(6379, "localhost");
 var multer = require('multer');
 var done = false;
 var usrID = "";
+var moment = require('moment');
+var moment = require('moment-timezone');
+moment().tz("America/Los_Angeles").format();
+//moment().format();
 
 /*router.use(multer({
  dest : './public/music/',
@@ -41,6 +45,11 @@ router.get('/explore', function(req, res) {
 });
 
 router.get('/wall/:sessionId', function(req, res) {
+	//console.log("jibin");
+	//console.log(req);
+	var data = mysql.getWallAudio('40');
+	console.log(data);
+	
 	res.render('wall', {
 		sessionId : req.params.sessionId,
 	});
@@ -70,6 +79,10 @@ function generate_sessionId(callback) {
 	var random = Math.random().toString();
 	callback(crypto.createHash('sha1').update(current_date + random).digest(
 			'hex'));
+}
+
+function wallBuilder(sessionId){
+	
 }
 
 function getValueOfSessionId(callback, sessionId) {
@@ -220,6 +233,8 @@ router.post('/wall/:sessionId/audio', multer({
 		console.log(req.body);
 		var artPath = ".//static//music//" + req.files.albumArt.name;
 		var audioPath = ".//static//music//" + req.files.audioFile.name;
+		var now = moment().tz("America/Los_Angeles").toISOString();
+		console.log(now);
 		upload_data = {
 				"albumArt":artPath,
 				"audioFile":audioPath,
@@ -228,7 +243,8 @@ router.post('/wall/:sessionId/audio', multer({
 				"genre":req.body.genre,
 				"description":req.body.description,
 				"userId":req.params.sessionId,
-				"name":req.files.audioFile.name
+				"name":req.files.audioFile.name,
+				"created" : now,
 		};
 		console.log(upload_data);
 		mysql.insertAudio(upload_data);

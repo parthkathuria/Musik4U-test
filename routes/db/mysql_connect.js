@@ -10,6 +10,7 @@ var pool = mysql.createPool({
 	database: 'music4u'
 });
 
+
 var elasticClient = new elasticsearch.Client({
 	host: 'localhost:9200',
 	log: 'trace'
@@ -96,24 +97,39 @@ function getHomeAudioLatest(callback, slimit, elimit){
 	});
 }
 
-function getSpecificAudio(callback, audioId)
+var getWallAudio = function getWallAudioList(callback,userId)
 {
-	var sql = "SELECT * FROM Audio WHERE audioId = "+audioId;
-	pool.getConnection(function(err, connection){
-		connection.query( sql,  function(err, row){
-			if(err)	{
-				throw err;
-			}else{
-				if(row.length!==0){
-					console.log("DATA : "+JSON.stringify(row));
-					callback(err, JSON.stringify(row));
-				}
-			}
-		});		  
-		connection.release();
+	var connection  = mysql.createConnection({
+		host     : 'localhost',
+		user     : 'root',
+		password : 'sample123',
+		port: '3306',
+		database: 'music4u'
 	});
-}
+	var sql = "SELECT * FROM audio WHERE userId = '40' ";
+	
+	console.log("jibin");
+	connection.connect();
+	connection.query(sql, function(err, rows, fields) {
+		  if (!err){
+		    //console.log('The solution is: ', fields);
+			  ///fields = rows
+			  get_data(rows);
+		  //return rows;
+		  } else{
+		    console.log('Error while performing Query.');
+	}
+		});
+	//console.log(rows);
 
+	connection.end();
+	//return data;
+	
+}
+function get_data(rows){
+	console.log(rows);
+}
+console.log(getWallAudio);
 function getHomeAudioTrendy(callback){
 	var sql = "SELECT DISTINCT audioLiked, COUNT(audioLiked) AS CountOfLikes FROM Likes GROUP BY audioLiked;";
 	pool.getConnection(function(err, connection){
@@ -274,21 +290,13 @@ function audioUpload1(callback, userId, author, language, genre, producer, direc
 }
 
 function insertAudio(data){
-	console.log("88888");
-	var sql = "insert into audio(albumArt,audioFile, userId,artist,title, genre,description,name) values('"+data.albumArt+"','"+data.audioFile+"','"+data.userId+"','"+data.artist+"','"+data.title+"','"+data.genre+"','"+data.description+"','"+data.name+"')";
-	console.log(sql);
+	var sql = "insert into audio(albumArt,audioFile, userId,artist,title, genre_id,description,name,created_at) values('"+data.albumArt+"','"+data.audioFile+"','"+data.userId+"','"+data.artist+"','"+data.title+"','"+data.genre+"','"+data.description+"','"+data.name+"','"+data.created+"')";
 	pool.getConnection(function(err, connection){
 		connection.query(sql, function(err, results) {
 			if (err) {
 				throw err;
 				console.log(err);
 			}
-			else
-			{
-				//callback(err, results);
-				console.log(results);
-			}
-			//console.log(results);
 		});
 		connection.release();
 	});	
@@ -313,4 +321,4 @@ exports.getHomeAudioLatest = getHomeAudioLatest;
 exports.getHomeAudioTrendy = getHomeAudioTrendy;
 exports.insertAudio = insertAudio;
 exports.getSearchedAudios = getSearchedAudios;
-//exports.indexThisrow = indexThisrow;
+exports.getWallAudio = getWallAudio;

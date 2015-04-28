@@ -82,44 +82,6 @@ Music4u.user = function(window, document, undefined) {
 			}
 		});
 	}, audioUpload = function() {
-		//alert("jiji");
-		/*var title = $("#title").val();
-		var artist = $("#artist").val();
-		var genre = $("#genre").val();
-		var description = $("#description").val();
-		var audioFile = $("#audioFile")[0];
-		var albumArt = $("#albumArt")[0];
-		var audio_file = new FormData(audioFile);
-		var album_art = new FormData(albumArt);
-		var session_id = getCookie("sessionId");
-
-		var data = {
-				"title": title,
-				"artist": artist,
-				"genre": genre,
-				"description": description,
-				"session_id" : session_id,
-				"audio_file" : audio_file,
-				"album_art" : album_art
-		}
-		
-		console.log(data);
-		$.ajax({
-			type : "POST",
-			url : "/wall/" + session_id + "/audio",
-			data : data,
-			dataType : 'JSON',
-			success : function(data) {
-				//set cookie after login
-				unsetkCookie("email");
-				window.location.href = "/wall/" + data.sessionId;
-			},
-			cache : false,
-			error : function(error) {
-				console.log("Ajax request has failed. logout failed");
-			}
-		});*/
-		
 		var session_id = getCookie("sessionId");
 		var title = $("#title").val();
 		var artist = $("#artist").val();
@@ -151,6 +113,27 @@ Music4u.user = function(window, document, undefined) {
 	    });
 		
 		
+		
+	},buildWall = function(){
+		var session_id = getCookie("sessionId");
+		$.ajax({
+			type : "GET",
+			url : "/wall/"+session_id,
+			data : session_id,
+			dataType : 'JSON',
+			success : function(data) {
+				//set cookie after login
+				//email = "jibin";
+				setCookie("sessionId", data.sessionId);
+				//alert("Success : " +data.sessionId);
+				window.location.href = "/wall/" + data.sessionId;
+			},
+			cache : false,
+			error : function(error) {
+				console.log(Error
+						+ "\nAjax request has failed. Registration Failed ");
+			}
+		});
 		
 	}, register = function() {
 		var email = $("#email").val();
@@ -191,6 +174,7 @@ Music4u.user = function(window, document, undefined) {
 		register : register,
 		audioUpload: audioUpload,
 		login : login,
+		buildWall:buildWall,
 		logout : logout
 	};
 }(this, document);
