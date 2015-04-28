@@ -211,7 +211,7 @@ exports.retrieveAudio=function(callback, userId, audioId){
 	});
 };
 
-function audioUpload(callback, userId, author, language, genre, producer, director, description, releaseDate, audioName, owner, audioFileLoc, creationDate, lastModified, audioId){
+function audioUpload1(callback, userId, author, language, genre, producer, director, description, releaseDate, audioName, owner, audioFileLoc, creationDate, lastModified, audioId){
 	var sql="insert into Audio(audioId,author,language, genre,producer,director, description,releaseDate,audioName,owner,audioFileLoc,lastModified) values (?,?,?,?,?,?,?,?,?,?,?,?)";
 
 	pool.getConnection(function(err, connection){
@@ -273,6 +273,27 @@ function audioUpload(callback, userId, author, language, genre, producer, direct
 	});
 }
 
+function insertAudio(data){
+	console.log("88888");
+	var sql = "insert into audio(albumArt,audioFile, userId,artist,title, genre,description,name) values('"+data.albumArt+"','"+data.audioFile+"','"+data.userId+"','"+data.artist+"','"+data.title+"','"+data.genre+"','"+data.description+"','"+data.name+"')";
+	console.log(sql);
+	pool.getConnection(function(err, connection){
+		connection.query(sql, function(err, results) {
+			if (err) {
+				throw err;
+				console.log(err);
+			}
+			else
+			{
+				//callback(err, results);
+				console.log(results);
+			}
+			//console.log(results);
+		});
+		connection.release();
+	});	
+}
+
 function getSearchedAudios(callback, keyword){
 	// elastic search 
 	console.log('Keyword*********** : '+keyword);
@@ -290,6 +311,6 @@ exports.insertUser = insertUser;
 exports.validateUser = validateUser;
 exports.getHomeAudioLatest = getHomeAudioLatest;
 exports.getHomeAudioTrendy = getHomeAudioTrendy;
-exports.audioUpload = audioUpload;
+exports.insertAudio = insertAudio;
 exports.getSearchedAudios = getSearchedAudios;
 //exports.indexThisrow = indexThisrow;

@@ -7,113 +7,236 @@ var redis = require('redis');
 var session = require('express-session');
 var redisStore = require('connect-redis')(session);
 var client = redis.createClient(6379, "localhost");
+var multer = require('multer');
+var done = false;
+var usrID = "";
+
+/*router.use(multer({
+ dest : './public/music/',
+ rename : function(fieldname, filename) {
+ return filename + Date.now();
+ },
+ onFileUploadStart : function(file) {
+ console.log(file.originalname + ' is starting ...')
+ },
+ onFileUploadComplete : function(file) {
+ console.log(file.fieldname + ' uploaded to  ' + file.path)
+ done = true;
+ }
+ }));*/
 
 /* GET home page. */
 router.get('/', function(req, res) {
-  res.render('index', { title: 'Express' });
+	res.render('index', {
+		title : 'Express'
+	});
 });
 
-router.get('/signin',function(req,res){
+router.get('/signin', function(req, res) {
 	res.render('signin');
 });
 
-router.get('/explore',function(req,res){
+router.get('/explore', function(req, res) {
 	res.render('explore');
 });
 
-router.get('/wall/:sessionId',function(req,res){
-	res.render('wall',{sessionId:req.params.sessionId});
+router.get('/wall/:sessionId', function(req, res) {
+	res.render('wall', {
+		sessionId : req.params.sessionId,
+	});
+	/*getValueOfSessionId(function(userId) {
+		console.log(userId);
+		
+	}, req.params.sessionId);*/
+
 });
 
-router.get('/wall/:sessionId/upload',function(req,res){
-	res.render('upload',{sessionId:req.params.sessionId});
+router.get('/wall/:sessionId/upload', function(req, res) {
+	res.render('upload', {
+		sessionId : req.params.sessionId,
+	});
+	/*getValueOfSessionId(function(userId) {
+		console.log(userId);
+		
+	}, req.params.sessionId);*/
 });
 
-
-router.get('/signup',function(req,res){
+router.get('/signup', function(req, res) {
 	res.render('signup');
 });
 
-function generate_sessionId(callback)
-{
+function generate_sessionId(callback) {
 	var current_date = (new Date()).valueOf().toString();
 	var random = Math.random().toString();
-	callback(crypto.createHash('sha1').update(current_date + random).digest('hex'));
+	callback(crypto.createHash('sha1').update(current_date + random).digest(
+			'hex'));
 }
-router.post('/register',function(req,res){
+
+function getValueOfSessionId(callback, sessionId) {
+	var ses = sessionId;
+	client.lrange(ses, 0, -1, function(err, reply) {
+		if (err) {
+			console.log(err);
+		} else {
+			console.log('Redis val : ' + reply);
+			callback(reply);
+		}
+	});
+}
+
+function getUserId(sessionId) {
+	var ses = sessionId;
+	var uid = "";
+	uid : client.lrange(ses, 0, -1, function(err, reply) {
+		if (err) {
+			console.log(err);
+			//return false;
+		} else {
+			console.log('Redis val : ' + reply);
+			//usrID = reply;
+			return reply;
+		}
+	});
+	return uid;
+};
+router.post('/register', function(req, res) {
 	console.log(req.body);
-	if(!req.body.hasOwnProperty('firstname') || !req.body.hasOwnProperty('lastname') || !req.body.hasOwnProperty('email') ||!req.body.hasOwnProperty('password')) {
+	if (!req.body.hasOwnProperty('firstname')
+			|| !req.body.hasOwnProperty('lastname')
+			|| !req.body.hasOwnProperty('email')
+			|| !req.body.hasOwnProperty('password')) {
 		res.statusCode = 500;
 		return res.send('Error 500: Post syntax incorrect.');
 	}
 
-	mysql.insertUser(function(err,results){
-		if(err){
+	mysql.insertUser(function(err, results) {
+		if (err) {
 			throw err;
 			console.log(err);
-		}else{
-			if(results.length == 0)
-			{
+		} else {
+			if (results.length == 0) {
 				var msg = "Not able to store the user";
-				res.end({Error : msg});
-			}
-			else
-			{
-				//console.log(results);
+				res.end({
+					Error : msg
+				});
+			} else {
+				// console.log(results);
 				var usrId = results.insertId;
 				generate_sessionId(function(result) {
-					if(result.length != 0) {
+					if (result.length != 0) {
 						req.session.userId = usrId;
-						req.session.sessionId = result;
+						//req.session.sessionId = result;
+						req.session.sessionId = usrId;
 						console.log(result);
-						//res.render(200,'/wall/'+result,{sessionId : req.session.sessionId,userId : req.session.userId})
-						res.status(200).send({sessionId : req.session.sessionId,userId : req.session.userId});
-						//res.send('{\"sessionId\" : \"'+ req.session.sessionId + '\"}');
-					}
-				});
-			}
-		}
-	},req.param('firstname'),req.param('lastname'), req.param('email'), req.param('password'));
-});
-
-router.post('/login',function(req,res){
-	if(!req.body.hasOwnProperty('email') ||!req.body.hasOwnProperty('password')) {
-		res.statusCode = 400;
-		return res.send('Error 400: Post syntax incorrect.');
-	}
-
-	mysql.validateUser(function(err,results){
-		if(err){
-			throw err;
-		}else{
-			if(results.length == 0)
-			{
-				var msg = "Your credentials don't match. Please try again.";
-				res.end({Error : msg});
-			}
-			else
-			{
-				console.log(results);
-				var usrId = results[0].userId;
-				generate_sessionId(function(result) {
-					if(result.length != 0) {
-						client.rpush([result, usrId], function(err, reply) {
-							console.log(reply); //prints 2
-						});
-						req.session.sessionId = result;
+						// res.render(200,'/wall/'+result,{sessionId :
+						// req.session.sessionId,userId : req.session.userId})
 						res.status(200).send({
 							sessionId : req.session.sessionId,
 							userId : req.session.userId
 						});
-						/*res.render('wall', {
-							sessionId : req.session.sessionId,
-							userId : req.session.userId
-						});*/
-//						res.end('{\"sessionId\" : \"'+ req.session.sessionId + '\"}');
+						// res.send('{\"sessionId\" : \"'+ req.session.sessionId
+						// + '\"}');
 					}
 				});
 			}
 		}
-	},req.param('email'),req.param('password'));
+	}, req.param('firstname'), req.param('lastname'), req.param('email'), req
+			.param('password'));
+});
+
+router.post('/login', function(req, res) {
+	if (!req.body.hasOwnProperty('email')
+			|| !req.body.hasOwnProperty('password')) {
+		res.statusCode = 400;
+		return res.send('Error 400: Post syntax incorrect.');
+	}
+
+	mysql.validateUser(function(err, results) {
+		if (err) {
+			throw err;
+		} else {
+			if (results.length == 0) {
+				var msg = "Your credentials don't match. Please try again.";
+				res.end({
+					Error : msg
+				});
+			} else {
+				console.log(results);
+				var usrId = results[0].userId;
+				console.log(usrId);
+				res.status(200).send({
+					//sessionId : req.session.sessionId,
+					sessionId : usrId
+					//userId : req.session.userId
+				});
+				generate_sessionId(function(result) {
+					if (result.length != 0) {
+						client.rpush([ result, usrId ], function(err, reply) {
+							console.log(reply); // prints 2
+						});
+						req.session.sessionId = result;
+						console.log("Result:" + result);
+						
+						/*
+						 * res.render('wall', { sessionId :
+						 * req.session.sessionId, userId : req.session.userId
+						 * });
+						 */
+						// res.end('{\"sessionId\" : \"'+ req.session.sessionId
+						// + '\"}');
+					}
+				});
+			}
+		}
+	}, req.param('email'), req.param('password'));
+});
+
+router.post('/wall/:sessionId/audio', multer({
+	dest : './public/music/',
+	rename : function(fieldname, filename, req, res) {
+		var userId = req.params.sessionId;
+		console.log(req.params);
+		return filename + "_" + userId;
+	},
+	/*changeDest: function(dest, req, res) {
+		var usrId = "";
+		getValueOfSessionId(function(userId){
+			//console.log(userId);
+			usrId = userId;
+		},req.params.sessionId);
+		//console.log(req.params);
+		  return dest+"_"+usrId; 
+		},*/
+	onFileUploadStart : function(file) {
+		//console.log(file.originalname + ' is starting ...');
+	},
+	onFileUploadComplete : function(file,req, res) {
+		//console.log(file.fieldname + ' uploaded to  ' + file.path)
+		done = true;
+	}
+}),function(req, res) {
+	
+	if (done == true) {
+		console.log(req.body);
+		var artPath = ".//static//music//" + req.files.albumArt.name;
+		var audioPath = ".//static//music//" + req.files.audioFile.name;
+		upload_data = {
+				"albumArt":artPath,
+				"audioFile":audioPath,
+				"artist":req.body.artist,
+				"title":req.body.title,
+				"genre":req.body.genre,
+				"description":req.body.description,
+				"userId":req.params.sessionId,
+				"name":req.files.audioFile.name
+		};
+		console.log(upload_data);
+		mysql.insertAudio(upload_data);
+		/*res.status(200).send({
+			data:"success"
+		});*/
+		res.status(200).send("file uploaded");
+		//res.end("File uploaded.");
+	}
 });
 module.exports = router;

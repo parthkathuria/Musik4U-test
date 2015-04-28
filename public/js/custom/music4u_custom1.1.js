@@ -1,121 +1,157 @@
 Music4u = {
-	"user":null,
-	"general":null
+	"user" : null,
+	"general" : null
 };
 
-Music4u.user  = function(window, document, undefined){
-    'use strict';
+Music4u.user = function(window, document, undefined) {
+	'use strict';
 	var user_param = {
-		"user_session":'',
+		"sessionId" : '',
 		"status" : false
-		
-	},
-	check_login = function(){
-		user_param.user_session = getCookie('user_session');
-		if(user_param.user_session !=""){
+
+	}, check_login = function() {
+		user_param.sessionId = getCookie('sessionId');
+		if (user_param.sessionId != "") {
 			user_param.status = true;
-		}else{
+		} else {
 			user_param.status = false;
 		}
-	},
-	getCookie = function(cName){
+	}, getCookie = function(cName) {
 		var name = cName + '=';
 		var ca = document.cookie.split(';');
-		for(var i=0; i<ca.length; i++) {
+		for (var i = 0; i < ca.length; i++) {
 			var c = ca[i];
-			while (c.charAt(0)==' ') c = c.substring(1);
-			if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+			while (c.charAt(0) == ' ')
+				c = c.substring(1);
+			if (c.indexOf(name) == 0)
+				return c.substring(name.length, c.length);
 		}
 		return "";
-	},
-	unsetkCookie = function(cname){
-		
-	},
-	setCookie = function(cname, cvalue){
+	}, unsetkCookie = function(cname) {
+
+	}, setCookie = function(cname, cvalue) {
 		document.cookie = cname + "=" + cvalue;
-	},
-	login = function(){
+	}, login = function() {
 		var email = $("#email").val();
 		var password = $("#password").val();
-		alert(email);
-		if(email !='' && password !=''){
+		//alert(email);
+		if (email != '' && password != '') {
 			var data = {
-				"email":email,
-				"password":password
+				"email" : email,
+				"password" : password
 			}
 			$.ajax({
-					type: "POST",
-					url: "/login",
-					data: data,
-					dataType: 'JSON',
-					success: function(data) {
-						//set cookie after login
-							user_param.user_session = data.sessionId;
-							setCookie("user_session",user_param.user_session);
-							alert("Success:" + user_param.user_session);
-							window.location.href= "/wall/"+data.sessionId;
-					},
-					cache: false,
-					error: function(error) {
-						unsetkCookie("user_session");
-						console.log("login failed");
-					}
-				});
-		}else{
-			
+				type : "POST",
+				url : "/login",
+				data : data,
+				dataType : 'JSON',
+				success : function(data) {
+					//set cookie after login
+					//console.log(data);
+					user_param.sessionId = data.sessionId;
+					setCookie("sessionId", user_param.sessionId);
+					//alert("Success:" + user_param.sessionId);
+					window.location.href = "/wall/" + data.sessionId;
+				},
+				cache : false,
+				error : function(error) {
+					unsetkCookie("sessionId");
+					console.log("login failed");
+				}
+			});
+		} else {
+
 		}
-	},
-	logout= function(){
+	}, logout = function() {
 		var data = {
-			"email":"jibin"
+			"email" : "jibin"
 		}
 		$.ajax({
-                type: "GET",
-                url: "/logout",
-                data: data,
-                dataType: 'JSON',
-                success: function(data) {
-					//set cookie after login
-					unsetkCookie("user_session");
-					
-                },
-                cache: false,
-                error: function(error) {
-                    console.log("Ajax request has failed. logout failed");
-                }
-            });
-	},
-	audioUpload= function(){
+			type : "GET",
+			url : "/logout",
+			data : data,
+			dataType : 'JSON',
+			success : function(data) {
+				//set cookie after login
+				unsetkCookie("sessionId");
+
+			},
+			cache : false,
+			error : function(error) {
+				console.log("Ajax request has failed. logout failed");
+			}
+		});
+	}, audioUpload = function() {
+		//alert("jiji");
+		/*var title = $("#title").val();
+		var artist = $("#artist").val();
+		var genre = $("#genre").val();
+		var description = $("#description").val();
+		var audioFile = $("#audioFile")[0];
+		var albumArt = $("#albumArt")[0];
+		var audio_file = new FormData(audioFile);
+		var album_art = new FormData(albumArt);
+		var session_id = getCookie("sessionId");
+
+		var data = {
+				"title": title,
+				"artist": artist,
+				"genre": genre,
+				"description": description,
+				"session_id" : session_id,
+				"audio_file" : audio_file,
+				"album_art" : album_art
+		}
 		
-		var files = $("#audioFile");
-		var audio_file = new FormData(files);
-		/*$.each(files, function(key, value)
-		{
-			data.append(key, value);
+		console.log(data);
+		$.ajax({
+			type : "POST",
+			url : "/wall/" + session_id + "/audio",
+			data : data,
+			dataType : 'JSON',
+			success : function(data) {
+				//set cookie after login
+				unsetkCookie("email");
+				window.location.href = "/wall/" + data.sessionId;
+			},
+			cache : false,
+			error : function(error) {
+				console.log("Ajax request has failed. logout failed");
+			}
 		});*/
 		
-		
+		var session_id = getCookie("sessionId");
+		var title = $("#title").val();
+		var artist = $("#artist").val();
+		var genre = $("#genre").val();
+		var description = $("#description").val();
+		var session_id = getCookie("sessionId");
+
 		var data = {
-			"session_id":session_id,
-			"audio_file": audio_file
-		}
-		$.ajax({
-                type: "POST",
-                url: "/"+session_id+"/audio",
-                data: data,
-                dataType: 'JSON',
-                success: function(data) {
-					//set cookie after login
-					unsetkCookie("email");
-					window.location.href= "/wall/"+data.sessionId;
-                },
-                cache: false,
-                error: function(error) {
-                    console.log("Ajax request has failed. logout failed");
-                }
-            });
-	},
-	register = function(){
+				"title": title,
+				"artist": artist,
+				"genre": genre,
+				"description": description,
+				"session_id" : session_id
+		} 
+		//alert(session_id);
+		  $('#uploadForm').ajaxSubmit({
+			  	type : "POST",
+				url : "/wall/"+session_id+"/audio",
+				//data: data,
+
+	            error: function(xhr) {
+	                    status('Error: ' + xhr.status);
+	            },
+
+	            success: function(response) {
+	                     console.log(response);
+	            }
+	    });
+		
+		
+		
+	}, register = function() {
 		var email = $("#email").val();
 		var firstname = $("#firstname").val();
 		var lastname = $("#lastname").val();
@@ -123,82 +159,98 @@ Music4u.user  = function(window, document, undefined){
 		//alert(name);
 		//alert(email);
 		var data = {
-			"firstname": firstname,
-			"lastname": lastname,
-			"password":password,
-			"email":email
+			"firstname" : firstname,
+			"lastname" : lastname,
+			"password" : password,
+			"email" : email
 		}
 		$.ajax({
-                type: "POST",
-                url: "/register",
-                data: data,
-                dataType: 'JSON',
-                success: function(data) {
-					//set cookie after login
-					//email = "jibin";
-					setCookie("email",email);
-					//alert("Success : " +data.sessionId);
-					window.location.href= "/wall/"+data.sessionId;
-                },
-                cache: false,
-                error: function(error) {
-                    console.log(Error + "\nAjax request has failed. Registration Failed ");
-                }
-            });
+			type : "POST",
+			url : "/register",
+			data : data,
+			dataType : 'JSON',
+			success : function(data) {
+				//set cookie after login
+				//email = "jibin";
+				setCookie("sessionId", data.sessionId);
+				//alert("Success : " +data.sessionId);
+				window.location.href = "/wall/" + data.sessionId;
+			},
+			cache : false,
+			error : function(error) {
+				console.log(Error
+						+ "\nAjax request has failed. Registration Failed ");
+			}
+		});
 	};
-	
-return {
-        check_login: check_login,
-        user_param: user_param,
-        register: register,
-        login: login,
-        logout: logout
-    };
+
+	return {
+		check_login : check_login,
+		user_param : user_param,
+		register : register,
+		audioUpload: audioUpload,
+		login : login,
+		logout : logout
+	};
 }(this, document);
 
-Music4u.general  = function(window, document, undefined){
+Music4u.general = function(window, document, undefined) {
 	'use strict';
 	var user_param = {
-		"user_session":'',
+		"sessionId" : '',
 		"status" : false
-		
-	},
-	get_genere = function(){
+
+	}, get_genere = function() {
 		var data = {
-			"session_id":session_id,
-			"audio_file": audio_file
+			"session_id" : session_id,
+			"audio_file" : audio_file
 		}
 		$.ajax({
-                type: "GET",
-                url: "/genere",
-                data: data,
-                dataType: 'JSON',
-                success: function(data) {
-					//set cookie after login
-					unsetkCookie("email");
-                },
-                cache: false,
-                error: function(error) {
-                    console.log("Ajax request has failed. logout failed");
-                }
-            });
+			type : "GET",
+			url : "/genere",
+			data : data,
+			dataType : 'JSON',
+			success : function(data) {
+				//set cookie after login
+				unsetkCookie("email");
+			},
+			cache : false,
+			error : function(error) {
+				console.log("Ajax request has failed. logout failed");
+			}
+		});
 	};
 
-return {
-        get_genere: get_genere
-    };
+	return {
+		get_genere : get_genere
+	};
 }(this, document);
 
-function login_user(){
-	
+function login_user() {
+
 	var email = $('#email').val();
 	var password = $('#password').val();
-	
-	if( password != '' && email !=''){
+
+	if (password != '' && email != '') {
 		Music4u.user.login();
 	}
 }
 
-function signup_user(){
+function signup_user() {
 	Music4u.user.register();
 }
+
+function upload_file(){
+	Music4u.user.audioUpload();
+	// $('#uploadForm').submit(function() {
+	    // alert("jjjj");
+
+	      
+	        //Very important line, it disable the page refresh.
+	   // return false;
+	   // }); 
+}
+
+
+
+

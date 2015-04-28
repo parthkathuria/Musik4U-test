@@ -2,7 +2,7 @@
 <html lang="en" class="app">
 <head>
     <meta charset="utf-8" />
-    <title>Musik | Wall</title>
+    <title>Musik | Upload MusicK</title>
     <meta name="description" content="app, web app, responsive, admin dashboard, admin, flat, flat ui, ui kit, off screen nav" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="stylesheet" href="/static/js/jPlayer/jplayer.flat.css" type="text/css" />
@@ -22,6 +22,8 @@
     <script type="text/javascript" src="/static/js/jPlayer/jquery.jplayer.min.js"></script>
     <script type="text/javascript" src="/static/js/jPlayer/add-on/jplayer.playlist.min.js"></script>
     <script type="text/javascript" src="/static/js/jPlayer/demo.js"></script>
+    <script type="text/javascript" src="/static/js/custom/music4u_custom1.1.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js"></script>
     <!--[if lt IE 9]>
       <script src="/static/js/ie/html5shiv.js"></script>
       <script src="/static/js/ie/respond.min.js"></script>
@@ -240,61 +242,61 @@
                             <section class="vbox">
                                 <section class="scrollable padder-lg w-f-md" id="bjax-target">
                                     <h2 class="font-thin m-b">
-                                        Upload MusicK <i class="fa fa-cloud-upload text"></i>
+                                        Upload MusiK <i class="fa fa-cloud-upload text"></i>
                                     </h2>
                                     <div class="row">
                                         <div class="col-sm-6">
                                             <section class="panel panel-default">
                                                 <!--<header class="panel-heading font-bold">Horizontal form</header>-->
                                                 <div class="panel-body">
-                                                    <form class="form-horizontal">
+                                                    <form class="form-horizontal" id="uploadForm" enctype="multipart/form-data" action="/wall/{{sessionId}}/audio" method="POST">
                                                         <div class="form-group">
                                                             <label class="col-lg-2 control-label">Title</label>
                                                             <div class="col-lg-10">
-                                                                <input type="text" class="form-control" required placeholder="Title...">
+                                                                <input type="text" name="title" id="title" class="form-control" required placeholder="Title...">
                                                             </div>
                                                         </div>
                                                         <div class="form-group">
                                                             <label class="col-lg-2 control-label">Artist</label>
                                                             <div class="col-lg-10">
-                                                                <input type="text" class="form-control" required placeholder="Artist...">
+                                                                <input type="text" id="artist" name="artist" class="form-control" required placeholder="Artist...">
                                                             </div>
                                                         </div>
                                                         
                                                         <div class="form-group">
                                                             <label class="col-lg-2 control-label">Genre</label>
                                                             <div class="col-lg-10">
-                                                                <select name="genre" class="form-control m-b" required>
-                                                                    <option>--Select Genre--</option>
-                                                                    <option>acoustic</option>
-                                                                    <option>ambient</option>
-                                                                    <option>blues</option>
-                                                                    <option>classical</option>
-                                                                    <option>country</option>
-                                                                    <option>electronic</option>
-                                                                    <option>emo</option>
-                                                                    <option>folk</option>
-                                                                    <option>hardcore</option>
-                                                                    <option>hip hop</option>
-                                                                    <option>indie</option>
-                                                                    <option>jazz</option>
-                                                                    <option>latin</option>
-                                                                    <option>metal</option>
-                                                                    <option>pop</option>
-                                                                    <option>pop punk</option>
-                                                                    <option>punk</option>
-                                                                    <option>reggae</option>
-                                                                    <option>rnb</option>
-                                                                    <option>rock</option>
-                                                                    <option>soul</option>
-                                                                    <option>world</option>
+                                                                <select name="genre" id="genre" class="form-control m-b" required>
+                                                                    <option value="0">--Select Genre--</option>
+                                                                    <option value="1">acoustic</option>
+                                                                    <option value="2">ambient</option>
+                                                                    <option value="3">blues</option>
+                                                                    <option value="4">classical</option>
+                                                                    <option value="5">country</option>
+                                                                    <option value="6">electronic</option>
+                                                                    <option value="7">emo</option>
+                                                                    <option value="8">folk</option>
+                                                                    <option value="9">hardcore</option>
+                                                                    <option value="10">hip hop</option>
+                                                                    <option value="11">indie</option>
+                                                                    <option value="12">jazz</option>
+                                                                    <option value="13">latin</option>
+                                                                    <option value="14">metal</option>
+                                                                    <option value="15">pop</option>
+                                                                    <option value="16">pop punk</option>
+                                                                    <option value="17">punk</option>
+                                                                    <option value="18">reggae</option>
+                                                                    <option value="19">rnb</option>
+                                                                    <option value="20">rock</option>
+                                                                    <option value="21">soul</option>
+                                                                    <option value="22">world</option>
                                                                 </select>
                                                             </div>
                                                         </div>
                                                          <div class="form-group">
                                                             <label class="col-lg-2 control-label">Description</label>
                                                             <div class="col-lg-10">
-                                                                <textarea type="text" rows="4" cols="50" class="form-control" placeholder="Description..."></textarea>
+                                                                <textarea type="text" id="description" name="description" rows="4" cols="50" class="form-control" placeholder="Description..."></textarea>
                                                             </div>
                                                         </div>
                                                         <div class="form-group">
@@ -312,17 +314,14 @@
                                                         <div class="form-group">
                                                             <!--<a href="#" class="btn btn-dark" data-dismiss="modal">Close</a>-->
                                                             <div class="col-lg-offset-2 col-lg-10">
-                                                                <button type="submit" class="btn btn-success" data-toggle="class:show inline" data-target="#spin" data-loading-text="Uploading..."><i class="fa fa-cloud-upload text"></i> Upload</button> <i class="fa fa-spin fa-spinner hide" id="spin"></i>
+                                                                <button onClick="upload_file()" class="btn btn-success" data-toggle="class:show inline" data-target="#spin" data-loading-text="Uploading..."><i class="fa fa-cloud-upload text"></i> Upload</button> <i class="fa fa-spin fa-spinner hide" id="spin"></i>
                                                             </div>
                                                         </div>
                                                     </form>
                                                 </div>
                                             </section>
                                         </div>
-                                        <div class="col-sm-10">
-                                            
-</div>
-
+                                        
                                     </div>
                                 </section>
                                 <br>
@@ -407,3 +406,10 @@
 
 </body>
 </html>
+
+<script>
+  //$(document).ready(function() {
+
+       
+//});
+</script>
