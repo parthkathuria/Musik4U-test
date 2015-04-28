@@ -314,7 +314,8 @@
                                                         <div class="form-group">
                                                             <!--<a href="#" class="btn btn-dark" data-dismiss="modal">Close</a>-->
                                                             <div class="col-lg-offset-2 col-lg-10">
-                                                                <button onClick="upload_file()" class="btn btn-success" data-toggle="class:show inline" data-target="#spin" data-loading-text="Uploading..."><i class="fa fa-cloud-upload text"></i> Upload</button> <i class="fa fa-spin fa-spinner hide" id="spin"></i>
+                                                                <button onClick="upload_file()" id="uploadBtn" class="btn btn-success" data-toggle="class:show inline" data-target="#spin" data-loading-text="Uploading..."><i class="fa fa-cloud-upload text"></i> Upload</button> <i class="fa fa-spin fa-spinner hide" id="spin"></i>
+                                                                
                                                             </div>
                                                         </div>
                                                     </form>
@@ -403,7 +404,19 @@
             </section>
         </section>
     </section>
-
+<div class="modal fade" id="uploadMsg">
+<div class="modal-dialog" id="uploadModal">
+    <div class="modal-content">
+        <div class="modal-body">
+           <h4>File Successfully Uploaded!</h4>
+            </div>
+            <div class="modal-footer">
+      <a href="/wall/{{sessionId}}/upload"  class="btn btn-success">Close</a>
+    </div>
+        </div>
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+</div>
 </body>
 </html>
 

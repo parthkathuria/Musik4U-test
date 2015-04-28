@@ -134,7 +134,7 @@ Music4u.user = function(window, document, undefined) {
 				"description": description,
 				"session_id" : session_id
 		} 
-		//alert(session_id);
+		
 		  $('#uploadForm').ajaxSubmit({
 			  	type : "POST",
 				url : "/wall/"+session_id+"/audio",
@@ -145,7 +145,8 @@ Music4u.user = function(window, document, undefined) {
 	            },
 
 	            success: function(response) {
-	                     console.log(response);
+	                     //console.log(response);
+	                     $('#uploadMsg').modal('toggle');
 	            }
 	    });
 		
