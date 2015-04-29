@@ -80,6 +80,23 @@ function validateUser(callback,email,password){
 	});	
 }
 
+function getAudio(callback,userId){
+	console.log(userId);
+	var sql = "SELECT * from audio as a where a.userId ="+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.userId";
+	console.log(sql);
+	pool.getConnection(function(err,connection){
+		connection.query(sql,function(err,rows){
+			if(err){
+				throw err;
+			}else{
+				//console.log(JSON.stingify(rows));
+				callback(err,rows);
+			}
+		});
+	});
+}
+
+
 function getHomeAudioLatest(callback, slimit, elimit){
 	var sql = "SELECT * FROM Audio JOIN Likes JOIN Comments ORDER BY creationDate DESC LIMIT "+slimit+", "+elimit;
 	pool.getConnection(function(err, connection){
@@ -97,7 +114,7 @@ function getHomeAudioLatest(callback, slimit, elimit){
 	});
 }
 
-var getWallAudio = function getWallAudioList(callback,userId)
+/*var getWallAudio = function getWallAudioList(callback,userId)
 {
 	var connection  = mysql.createConnection({
 		host     : 'localhost',
@@ -129,7 +146,7 @@ var getWallAudio = function getWallAudioList(callback,userId)
 function get_data(rows){
 	console.log(rows);
 }
-console.log(getWallAudio);
+console.log(getWallAudio);*/
 function getHomeAudioTrendy(callback){
 	var sql = "SELECT DISTINCT audioLiked, COUNT(audioLiked) AS CountOfLikes FROM Likes GROUP BY audioLiked;";
 	pool.getConnection(function(err, connection){
@@ -317,8 +334,8 @@ function getSearchedAudios(callback, keyword){
 
 exports.insertUser = insertUser;
 exports.validateUser = validateUser;
+exports.getAudio = getAudio;
 exports.getHomeAudioLatest = getHomeAudioLatest;
 exports.getHomeAudioTrendy = getHomeAudioTrendy;
 exports.insertAudio = insertAudio;
 exports.getSearchedAudios = getSearchedAudios;
-exports.getWallAudio = getWallAudio;

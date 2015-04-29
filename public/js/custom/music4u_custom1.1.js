@@ -118,15 +118,16 @@ Music4u.user = function(window, document, undefined) {
 		var session_id = getCookie("sessionId");
 		$.ajax({
 			type : "GET",
-			url : "/wall/"+session_id,
+			url : "/wall/"+session_id+"/getAudio",
 			data : session_id,
 			dataType : 'JSON',
 			success : function(data) {
 				//set cookie after login
 				//email = "jibin";
-				setCookie("sessionId", data.sessionId);
+				//setCookie("sessionId", data.sessionId);
 				//alert("Success : " +data.sessionId);
-				window.location.href = "/wall/" + data.sessionId;
+				//window.location.href = "/wall/" + data.sessionId;
+				console.log(data);
 			},
 			cache : false,
 			error : function(error) {

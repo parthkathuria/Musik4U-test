@@ -44,12 +44,30 @@ router.get('/explore', function(req, res) {
 	res.render('explore');
 });
 
+router.get('/wall/:sessionId/getAudio',function(req,res){
+	var sessionId = req.params.sessionId;
+	console.log("userid: " + sessionId);
+	mysql.getAudio(function(err,results){
+		if(err){
+			throw err;
+			console.log(err);
+		}else{
+			if(results.length == 0)
+			{
+				var msg = "Not able to get data";
+				res.end({Error : msg});
+			}
+			else
+			{
+				console.log(results);
+				res.status(200).send(results);
+			}
+		}
+	},sessionId);
+});
 router.get('/wall/:sessionId', function(req, res) {
 	//console.log("jibin");
 	//console.log(req);
-	var data = mysql.getWallAudio('40');
-	console.log(data);
-	
 	res.render('wall', {
 		sessionId : req.params.sessionId,
 	});
