@@ -47,10 +47,11 @@ Music4u.user = function(window, document, undefined) {
 				dataType : 'JSON',
 				success : function(data) {
 					//set cookie after login
-					//console.log(data);
+					console.log(data);
 					user_param.sessionId = data.sessionId;
 					setCookie("sessionId", user_param.sessionId);
 					//alert("Success:" + user_param.sessionId);
+					
 					window.location.href = "/wall/" + data.sessionId;
 				},
 				cache : false,
@@ -114,6 +115,28 @@ Music4u.user = function(window, document, undefined) {
 		
 		
 		
+	},likeAudio = function(){
+		var session_id = getCookie("sessionId");
+		$.ajax({
+			type : "POST",
+			url : "/wall/"+session_id+"/audio/4/like",
+			data : session_id,
+			dataType : 'JSON',
+			success : function(data) {
+				//set cookie after login
+				//email = "jibin";
+				//setCookie("sessionId", data.sessionId);
+				//alert("Success : " +data.sessionId);
+				//window.location.href = "/wall/" + data.sessionId;
+				console.log(data);
+			},
+			cache : false,
+			error : function(error) {
+				console.log(Error
+						+ "\nAjax request has failed. Registration Failed ");
+			}
+		});
+		
 	},buildWall = function(){
 		var session_id = getCookie("sessionId");
 		$.ajax({
@@ -159,6 +182,7 @@ Music4u.user = function(window, document, undefined) {
 				//email = "jibin";
 				setCookie("sessionId", data.sessionId);
 				//alert("Success : " +data.sessionId);
+				console.log(data);
 				window.location.href = "/wall/" + data.sessionId;
 			},
 			cache : false,
@@ -175,6 +199,7 @@ Music4u.user = function(window, document, undefined) {
 		register : register,
 		audioUpload: audioUpload,
 		login : login,
+		likeAudio : likeAudio,
 		buildWall:buildWall,
 		logout : logout
 	};
@@ -235,6 +260,10 @@ function upload_file(){
 	        //Very important line, it disable the page refresh.
 	   // return false;
 	   // }); 
+}
+
+function like(){
+	Music4u.user.likeAudio();
 }
 
 

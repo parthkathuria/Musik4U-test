@@ -19,7 +19,7 @@ var elasticClient = new elasticsearch.Client({
 function indexThisrow(callback, row)
 {
 	var rowId = row[0].audioId;
-	console.log(row);
+	//console.log(row);
 	elasticClient.create({
 		index: 'music4u',
 		type: 'musictype',
@@ -57,22 +57,22 @@ function insertUser(callback,firstname,lastname,email,confirm_password){
 			{
 				callback(err, results);
 			}
-			console.log(results);
+			//console.log(results);
 		});
 		connection.release();
 	});	
 }
 
 function validateUser(callback,email,password){
-	console.log("Email: " + email + "Password: " + password);
+	//console.log("Email: " + email + "Password: " + password);
 	var sql = "SELECT * FROM User where email = '" + email + "'" + " and password = '" + password + "'";
-	console.log(sql);
+	//console.log(sql);
 	pool.getConnection(function(err, connection){
 		connection.query( sql,  function(err, rows){
 			if(err)	{
 				throw err;
 			}else{		  		
-				console.log("DATA : "+JSON.stringify(rows));
+				//console.log("DATA : "+JSON.stringify(rows));
 				callback(err, rows);		  		
 			}
 		});		  
@@ -81,9 +81,10 @@ function validateUser(callback,email,password){
 }
 
 function getAudio(callback,userId){
-	console.log(userId);
-	var sql = "SELECT * from audio as a where a.userId ="+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.userId";
-	console.log(sql);
+	//console.log(userId);
+	var sql = "SELECT a.*, u.* , case when l.like_value = '1' then 'active' else '' end as my_like from audio as a join user as u on u.userId = a.userId left join likes_table as l on l.audio_id = a.audio_id where a.userId = "+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
+	//var sql = "SELECT * from audio as a join user as u on u.userId = a.userId where a.userId ="+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
+	//console.log(sql);
 	pool.getConnection(function(err,connection){
 		connection.query(sql,function(err,rows){
 			if(err){
@@ -105,7 +106,7 @@ function getHomeAudioLatest(callback, slimit, elimit){
 				throw err;
 			}else{
 				if(rows.length!==0){
-					console.log("DATA : "+JSON.stringify(rows));
+					//console.log("DATA : "+JSON.stringify(rows));
 					callback(err, JSON.stringify(rows));
 				}
 			}
@@ -158,21 +159,21 @@ function getHomeAudioTrendy(callback){
 				async.forEach(rows, getSpecificAudio, afterAllTasks);
 				function getSpecificAudio(row, callback)
 				{
-					console.log('JSON row : '+JSON.stringify(row));
+					//console.log('JSON row : '+JSON.stringify(row));
 					var audioRow = JSON.stringify(row);
 					var audioId = row.audioLiked;
 					var numLikes = row.CountOfLikes;
 					var audioList = row;
-					console.log("num of likes : "+numLikes);
+					//console.log("num of likes : "+numLikes);
 					var sqlCom = "SELECT COUNT(audioId) AS CountOfComments FROM Comments WHERE audioId = "+ audioId +" GROUP BY audioId";
 					connection.query( sqlCom,  function(err, row){
 						if(err)	{
-							console.log(err);
+							//console.log(err);
 							throw err;
 						}else{
 							if(row.length!=0) {
 								var numComments = row[0].CountOfComments;
-								console.log("num of comments : "+numComments);
+								//console.log("num of comments : "+numComments);
 							}
 							else {
 								var numComments = 0;
@@ -184,7 +185,7 @@ function getHomeAudioTrendy(callback){
 								}else{
 									if(row.length!==0){
 										//audios.push(JSON.stringify(row));
-										console.log("{\"audio\":"+JSON.stringify(row)+",\"comments\":"+numComments+",\"likes\":"+numLikes);
+										//console.log("{\"audio\":"+JSON.stringify(row)+",\"comments\":"+numComments+",\"likes\":"+numLikes);
 										audios.push("{\"audio\":"+JSON.stringify(row)+",\"comments\":"+numComments+",\"likes\":"+numLikes);
 										callback(err);
 									}
@@ -194,7 +195,7 @@ function getHomeAudioTrendy(callback){
 					});	
 				}
 				function afterAllTasks(err) {
-					console.log("DATA : "+audios);
+					//console.log("DATA : "+audios);
 					callback(err, audios);
 				}
 			}
@@ -204,34 +205,34 @@ function getHomeAudioTrendy(callback){
 }
 
 exports.retrieveAudio=function(callback, userId, audioId){
-	console.log(userId+":"+audioId);
+	//console.log(userId+":"+audioId);
 	var selectSql="select * from audio where audioId= ? and owner= ?";
 	pool.getConnection(function(err, connection){
 		connection.query(selectSql, [audioId,userId], function (err,results){
 			if (err) {
-				console.log("ERROR: " + err.message);
+				//console.log("ERROR: " + err.message);
 				//res.send(err.message);
 				throw err;
 			}else{
-				console.log("second query");
+				//console.log("second query");
 				var audios = JSON.stringify(results);
 				var commentSql="select * from comments where audioId= ? and userId= ?";
 				connection.query(commentSql, [audioId,userId], function (err,comments){
 					if (err) {
-						console.log(err);
+						//console.log(err);
 						throw err;
 
 					}else{
-						console.log("third query");
+						//console.log("third query");
 						var comment=JSON.stringify(comments);
 						var likeSql="select count(*) as numberOfLikes from Likes where audioLiked= ? and whoLikes= ? and likeStatus=1";
 						connection.query(likeSql, [audioId,userId], function (err,numberOfLikes){
 							if (err) {
-								console.log(err);
+								//console.log(err);
 								throw err;
 
 							}else{
-								console.log(numberOfLikes[0].numberOfLikes);
+								//console.log(numberOfLikes[0].numberOfLikes);
 								//res.json({"audio":results,"comments":comment,"likes":numberOfLikes});
 								callback("{\"audio\":"+audios+",\"comments\":"+comment+",\"likes\":"+JSON.stringify(numberOfLikes)+"}");
 							}
@@ -251,7 +252,7 @@ function audioUpload1(callback, userId, author, language, genre, producer, direc
 		connection.query(sql, [audioId,author,language, genre,producer,director, description,releaseDate,audioName,owner,audioFileLoc,creationDate,lastModified], 
 				function (err,rows,fields){
 			if (err) {
-				console.log("ERROR: " + err.message);
+				//console.log("ERROR: " + err.message);
 				callback(err.message);
 			}else{
 
@@ -265,13 +266,13 @@ function audioUpload1(callback, userId, author, language, genre, producer, direc
 						else
 						{
 							if(row.length!=0){
-								console.log('Row : '+JSON.stringify(row));
+								//console.log('Row : '+JSON.stringify(row));
 								//index into the elastic search
 								var rowId = row[0].audioId;
-								console.log('rowId : '+rowId);
+								//console.log('rowId : '+rowId);
 								var jsonrow = JSON.stringify(row);
 								var rowId1 = jsonrow.audioId;
-								console.log('json rowId : '+rowId1);
+								//console.log('json rowId : '+rowId1);
 								
 								elasticClient.create({
 									index: 'music4u',
@@ -292,7 +293,7 @@ function audioUpload1(callback, userId, author, language, genre, producer, direc
 										throw err;
 									else
 									{
-										console.log(results);
+										//console.log(results);
 									}
 								});
 							}
@@ -312,22 +313,86 @@ function insertAudio(data){
 		connection.query(sql, function(err, results) {
 			if (err) {
 				throw err;
-				console.log(err);
+				//console.log(err);
 			}
 		});
 		connection.release();
 	});	
 }
 
+function update_like(callback, data){
+	var sql_select = "SELECT count(audio_id) as count FROM likes_table WHERE audio_id = '4' AND user_id = '40'";
+	var sql_insert = "INSERT INTO likes_table (audio_id, user_id,like_value) values ('4','40','0')";
+	var sql_update = "UPDATE likes_table SET like_value = '1' WHERE audio_id = '4' AND user_id = '40'";
+	console.log(sql_select);
+	pool.getConnection(function(err, connection){
+		connection.query(sql_select, function(err, results) {
+			if (err) {
+				throw err;
+				//console.log(err);
+			}
+			console.log(results);
+			if(results.count == 0){
+				pool.getConnection(function(err, connection){
+				connection.query(sql_insert, function(err, results) {
+					if (err) {
+						throw err;
+						console.log(err);
+					}
+					console.log(results);
+				});
+				connection.release();
+				});
+			}else{
+				pool.getConnection(function(err, connection){
+				connection.query(sql_update, function(err, results) {
+					if (err) {
+						throw err;
+						console.log(err);
+					}
+					console.log(results);
+				});
+				connection.release();
+				});
+			}
+		});
+		connection.release();
+	});
+	//console.log(count);
+	/*if(count == 0){
+		var count = pool.getConnection(function(err, connection){
+			connection.query(sql_insert, function(err, results) {
+				if (err) {
+					throw err;
+					console.log(err);
+				}
+			});
+			connection.release();
+		});
+	}else{
+		var count = pool.getConnection(function(err, connection){
+			connection.query(sql_update, function(err, results) {
+				if (err) {
+					throw err;
+					console.log(err);
+				}
+			});
+			connection.release();
+		});
+	}*/
+	
+	
+}
+
 function getSearchedAudios(callback, keyword){
 	// elastic search 
-	console.log('Keyword*********** : '+keyword);
+	//console.log('Keyword*********** : '+keyword);
 	elasticClient.search({
 		  index: 'music4u',
 		  q: '_all:'+keyword
 		}, function (error, response) {
 			var hits = response.hits.hits;
-			console.log('Hits(Minu)******** : '+JSON.stringify(hits));
+			//console.log('Hits(Minu)******** : '+JSON.stringify(hits));
 			callback(JSON.stringify(hits));
 		});
 }
@@ -338,4 +403,5 @@ exports.getAudio = getAudio;
 exports.getHomeAudioLatest = getHomeAudioLatest;
 exports.getHomeAudioTrendy = getHomeAudioTrendy;
 exports.insertAudio = insertAudio;
-exports.getSearchedAudios = getSearchedAudios;
+exports.getSearchedAudios = getSearchedAudios;   
+exports.update_like = update_like;

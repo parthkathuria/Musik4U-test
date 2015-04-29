@@ -59,8 +59,11 @@ router.get('/wall/:sessionId/getAudio',function(req,res){
 			}
 			else
 			{
-				console.log(results);
-				res.status(200).send(results);
+				//var data = {audio:results};
+				/*res.status(200).send({
+					audio:JSON.stringify(results)
+				});*/
+				res.status(200).send(JSON.stringify(results));
 			}
 		}
 	},sessionId);
@@ -68,9 +71,37 @@ router.get('/wall/:sessionId/getAudio',function(req,res){
 router.get('/wall/:sessionId', function(req, res) {
 	//console.log("jibin");
 	//console.log(req);
-	res.render('wall', {
+	var sessionId = req.params.sessionId;
+	console.log("userid: " + sessionId);
+	mysql.getAudio(function(err,results){
+		if(err){
+			throw err;
+			console.log(err);
+		}else{
+			if(results.length == 0)
+			{
+				var msg = "Not able to get data";
+				res.status(200).send({Error : msg,
+					no_audio:true});
+			}
+			else
+			{
+				//var data = {audio:results};
+				/*res.status(200).send({
+					audio:JSON.stringify(results)
+				});*/
+				console.log(results);
+				res.status(200).render('wall',{
+					audio:results,
+					no_audio:false,
+					sessionId:req.params.sessionId
+					});
+			}
+		}
+	},sessionId);
+	/*res.render('wall', {
 		sessionId : req.params.sessionId,
-	});
+	});*/
 	/*getValueOfSessionId(function(userId) {
 		console.log(userId);
 		
@@ -99,9 +130,31 @@ function generate_sessionId(callback) {
 			'hex'));
 }
 
-function wallBuilder(sessionId){
-	
-}
+router.post("/wall/:sessionId/audio/:audioId/like",function(req,res){
+	var userId = req.params.sessionId;
+	var audioId = req.params.audioId;
+	mysql.update_like(function(err,results){
+		if(err){
+			throw err;
+			console.log(err);
+		}else{
+			if(results.length == 0)
+			{
+				var msg = "Not able to get data";
+				res.end({Error : msg});
+			}
+			else
+			{
+				//var data = {audio:results};
+				/*res.status(200).send({
+					audio:JSON.stringify(results)
+				});*/
+				console.log(results);
+				res.status(200).send(JSON.stringify(results));
+			}
+		}
+	},audioId);
+});
 
 function getValueOfSessionId(callback, sessionId) {
 	var ses = sessionId;
@@ -249,8 +302,8 @@ router.post('/wall/:sessionId/audio', multer({
 	
 	if (done == true) {
 		console.log(req.body);
-		var artPath = ".//static//music//" + req.files.albumArt.name;
-		var audioPath = ".//static//music//" + req.files.audioFile.name;
+		var artPath = "/static/music/" + req.files.albumArt.name;
+		var audioPath = "/static/music/" + req.files.audioFile.name;
 		var now = moment().tz("America/Los_Angeles").toISOString();
 		console.log(now);
 		upload_data = {

@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <link rel="stylesheet" href="/static/js/jPlayer/jplayer.flat.css" type="text/css" />
   <link rel="stylesheet" href="/static/css/bootstrap.css" type="text/css" />
-  <link rel="stylesheet" href="/static//css/animate.css" type="text/css" />
+  <link rel="stylesheet" href="/static/css/animate.css" type="text/css" />
   <link rel="stylesheet" href="/static/css/font-awesome.min.css" type="text/css" />
   <link rel="stylesheet" href="/static/css/simple-line-icons.css" type="text/css" />
   <link rel="stylesheet" href="/static/css/font.css" type="text/css" />
@@ -240,7 +240,7 @@
                         <section>
                             <section class="vbox">
                                 <section class="scrollable padder-lg">
-                                    <a href="#" class="pull-right text-muted m-t-lg" data-toggle="class:fa-spin"><i class="icon-refresh i-lg  inline" id="refresh"></i></a>
+                                    <a onclick="window.location.reload()" class="pull-right text-muted m-t-lg" data-toggle="class:fa-spin"><i class="icon-refresh i-lg  inline" id="refresh"></i></a>
                                     <h2 class="font-thin m-b">
                                         Discover <span class="musicbar animate inline m-l-sm" style="width:20px;height:20px">
                                             <span class="bar1 a1 bg-success lter"></span>
@@ -251,36 +251,57 @@
                                         </span>
                                     </h2>
                                     <div class="row">
+                                    {{#no_audio}}
+                                    <p>No music found. Please upload some songs or start following your friends.</p>
+                                    {{/no_audio}}
+                                    {{#audio}}
                                         <div class="col-sm-4">
                                             <section class="panel panel-default">
                                                 <!--<header class="panel-heading font-bold">Horizontal form</header>-->
                                                 <div class="panel-body col-sm-11">
                                                     <div class="row">
                                                         <div class="col-sm-3">
-                                                            <a href="#"><img src="/static/images/p1.jpg" alt="" style="width:50px;height:50px"></a>
+                                                            <!--a href="#"><img src="/static/images/p1.jpg" alt="" style="width:50px;height:50px"></a>-->
+                                                            <span class="thumb-sm avatar m-t-n-sm m-b-n-sm m-l-sm">
+                                								<img src="{{picture}}" alt="...">
+                            								</span>
                                                         </div>
                                                         <div class="col-sm-8">
-                                                            <label class="col-lg-2 control-label">Title</label>
+                                                            <label class="col-lg-10 control-label">{{firstname}} {{lastname}}</label>
                                                         </div>
                                                     </div>
                                                     <div class="padder-v row">
                                                         <div class="col-sm-11">
-                                                            <a href="#"><img src="/static/images/p1.jpg" alt="" style="width:100px;height:100px"></a>
+                                                        <span class="thumb-lg m-t-n-sm m-b-n-sm m-l-sm">
+                                								<img src="{{albumArt}}" alt="...">
+                            								</span>
+                                                            <!--<a href="#"><img src="{{albumArt}}" alt="" style="width:100px;height:100px"></a>-->
                                                         </div>
                                                     </div>
                                                     <div class="row">
                                                         <div class="col-sm-12">
+                                                        <label class="col-lg-10 control-label"><b>{{title}}</b></label><br>
+                                                        <small class="text-muted">{{artist}}</small>
                                                             <audio controls>
-                                                                <source src="#" type="audio/mpeg">
+                                                                <source src="{{audioFile}}" type="audio/mpeg">
                                                                 Your browser does not support the audio element.
                                                             </audio>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-sm-12">
+                                                        <a href="#" class="{{my_like}}" data-toggle="class" onclick="like();">
+                                                        {{like_count}}
+                                							<i class="fa fa-heart-o text"></i>
+                                							<i class="fa fa-heart text-active text-danger"></i>
+                              							</a>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 </section>
                                             </div>
                                                 <div class="clearfix visible-xs"></div>
-                                        
+                                        {{/audio}}
                                         </div>
                                 </section>
                             </section>
@@ -297,6 +318,6 @@
 </html>
 <script>
     $(document).ready(function () {
-        //Music4u.user.buildWall();
+       // Music4u.user.buildWall();
     });
 </script>
