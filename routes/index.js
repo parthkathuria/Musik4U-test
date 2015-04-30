@@ -81,8 +81,11 @@ router.get('/wall/:sessionId', function(req, res) {
 			if(results.length == 0)
 			{
 				var msg = "Not able to get data";
-				res.status(200).send({Error : msg,
-					no_audio:true});
+				res.status(200).render('wall',{
+					Error : msg,
+					sessionId : req.params.sessionId,
+					no_audio:true
+					});
 			}
 			else
 			{
@@ -90,7 +93,7 @@ router.get('/wall/:sessionId', function(req, res) {
 				/*res.status(200).send({
 					audio:JSON.stringify(results)
 				});*/
-				console.log(results);
+			//	console.log(results);
 				res.status(200).render('wall',{
 					audio:results,
 					no_audio:false,
@@ -104,7 +107,7 @@ router.get('/wall/:sessionId', function(req, res) {
 	});*/
 	/*getValueOfSessionId(function(userId) {
 		console.log(userId);
-		
+
 	}, req.params.sessionId);*/
 
 });
@@ -115,7 +118,7 @@ router.get('/wall/:sessionId/upload', function(req, res) {
 	});
 	/*getValueOfSessionId(function(userId) {
 		console.log(userId);
-		
+
 	}, req.params.sessionId);*/
 });
 
@@ -129,6 +132,13 @@ function generate_sessionId(callback) {
 	callback(crypto.createHash('sha1').update(current_date + random).digest(
 			'hex'));
 }
+
+router.get("/wall/:sessionId/profile",function(req,res){
+	var userId = req.params.sessionId;
+	res.render('profile',{
+		sessionId:userId
+	})
+});
 
 router.post("/wall/:sessionId/audio/:audioId/like",function(req,res){
 	var userId = req.params.sessionId;
@@ -260,7 +270,7 @@ router.post('/login', function(req, res) {
 						});
 						req.session.sessionId = result;
 						console.log("Result:" + result);
-						
+
 						/*
 						 * res.render('wall', { sessionId :
 						 * req.session.sessionId, userId : req.session.userId
@@ -289,7 +299,7 @@ router.post('/wall/:sessionId/audio', multer({
 			usrId = userId;
 		},req.params.sessionId);
 		//console.log(req.params);
-		  return dest+"_"+usrId; 
+		  return dest+"_"+usrId;
 		},*/
 	onFileUploadStart : function(file) {
 		//console.log(file.originalname + ' is starting ...');
@@ -299,10 +309,16 @@ router.post('/wall/:sessionId/audio', multer({
 		done = true;
 	}
 }),function(req, res) {
-	
+
 	if (done == true) {
-		console.log(req.body);
-		var artPath = "/static/music/" + req.files.albumArt.name;
+		console.log(req.files);
+		var artPath = "";
+		if(req.files.hasOwnProperty('albumArt')){
+			artPath = "/static/music/" + req.files.albumArt.name;
+		}else{
+			artPath = "/static/images/music_default.png";
+		}
+
 		var audioPath = "/static/music/" + req.files.audioFile.name;
 		var now = moment().tz("America/Los_Angeles").toISOString();
 		console.log(now);

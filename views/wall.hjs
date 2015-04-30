@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="app">
-<head>  
+<head>
   <meta charset="utf-8" />
   <title>Musik | Wall</title>
   <meta name="description" content="app, web app, responsive, admin dashboard, admin, flat, flat ui, ui kit, off screen nav" />
@@ -11,14 +11,15 @@
   <link rel="stylesheet" href="/static/css/font-awesome.min.css" type="text/css" />
   <link rel="stylesheet" href="/static/css/simple-line-icons.css" type="text/css" />
   <link rel="stylesheet" href="/static/css/font.css" type="text/css" />
-  <link rel="stylesheet" href="/static/css/app.css" type="text/css" />  
+  <link rel="stylesheet" href="/static/css/app.css" type="text/css" />
   <script src="/static/js/jquery.min.js"></script>
   <!-- Bootstrap -->
   <script src="/static/js/bootstrap.js"></script>
   <!-- App -->
-  <script src="/static/js/app.js"></script>  
+  <script src="/static/js/app.js"></script>
   <script src="/static/js/slimscroll/jquery.slimscroll.min.js"></script>
     <script src="/static/js/app.plugin.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
   <script type="text/javascript" src="/static/js/jPlayer/jquery.jplayer.min.js"></script>
   <script type="text/javascript" src="/static/js/jPlayer/add-on/jplayer.playlist.min.js"></script>
   <script type="text/javascript" src="/static/js/jPlayer/demo.js"></script>
@@ -121,7 +122,7 @@
                                 <a href="#">Settings</a>
                             </li>
                             <li>
-                                <a href="profile.html">Profile</a>
+                                <a href="/wall/{{sessionId}}/profile">Profile</a>
                             </li>
                             <li>
                                 <a href="#">
@@ -290,11 +291,16 @@
                                                     </div>
                                                     <div class="row">
                                                         <div class="col-sm-12">
-                                                        <a href="#" class="{{my_like}}" data-toggle="class" onclick="like();">
+                                                        <a href="#"  class="active {{audio_id}}_like"  like-count="{{like_count}}" onclick="unlike({{audio_id}});" style="display:{{audiolike}}">
                                                         {{like_count}}
-                                							<i class="fa fa-heart-o text"></i>
-                                							<i class="fa fa-heart text-active text-danger"></i>
-                              							</a>
+                                            							<i class="fa fa-heart-o text"></i>
+                                            							<i class="fa fa-heart text-active text-danger"></i>
+                                          							</a>
+                                                        <a href="#"  class=" {{audio_id}}_unlike"  like-count="{{like_count}}" onclick="like({{audio_id}}); " style="display:{{unlike}}">
+                                                        {{like_count}}
+                                            							<i class="fa fa-heart-o text"></i>
+                                            							<i class="fa fa-heart text-active text-danger"></i>
+                                          							</a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -318,6 +324,22 @@
 </html>
 <script>
     $(document).ready(function () {
+      var socket = io.connect('http://localhost:3000');
+      Music4u.user.socket = socket;
+      ///alert("tt");
+    /*  $("#likes").click(function(e){
+        e.preventDefault();
+        console.log("button clicked");
+      //  var jsonObject={"sessionId":{{sessionId}},"audioId":{{audio.audioId}},"likeStatus":1};
+        socket.emit('likes', jsonObject);
+
+        return false;
+      });*/
+
+      /*socket.on('likes', function(array){
+        console.log(array[0].numberOfLikes);
+        document.getElementById('likes').innerHTML=array[0].numberOfLikes + "<i class='fa fa-heart-o text'></i><i class='fa fa-heart text-active text-danger'></i>";
+      });*/
        // Music4u.user.buildWall();
     });
 </script>

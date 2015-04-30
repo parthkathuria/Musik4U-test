@@ -9,7 +9,9 @@ Music4u.user = function(window, document, undefined) {
 		"sessionId" : '',
 		"status" : false
 
-	}, check_login = function() {
+	},
+	socket = '',
+	 check_login = function() {
 		user_param.sessionId = getCookie('sessionId');
 		if (user_param.sessionId != "") {
 			user_param.status = true;
@@ -51,7 +53,7 @@ Music4u.user = function(window, document, undefined) {
 					user_param.sessionId = data.sessionId;
 					setCookie("sessionId", user_param.sessionId);
 					//alert("Success:" + user_param.sessionId);
-					
+
 					window.location.href = "/wall/" + data.sessionId;
 				},
 				cache : false,
@@ -96,8 +98,8 @@ Music4u.user = function(window, document, undefined) {
 				"genre": genre,
 				"description": description,
 				"session_id" : session_id
-		} 
-		
+		}
+
 		  $('#uploadForm').ajaxSubmit({
 			  	type : "POST",
 				url : "/wall/"+session_id+"/audio",
@@ -112,31 +114,22 @@ Music4u.user = function(window, document, undefined) {
 	                     $('#uploadMsg').modal('toggle');
 	            }
 	    });
-		
-		
-		
-	},likeAudio = function(){
-		var session_id = getCookie("sessionId");
-		$.ajax({
-			type : "POST",
-			url : "/wall/"+session_id+"/audio/4/like",
-			data : session_id,
-			dataType : 'JSON',
-			success : function(data) {
-				//set cookie after login
-				//email = "jibin";
-				//setCookie("sessionId", data.sessionId);
-				//alert("Success : " +data.sessionId);
-				//window.location.href = "/wall/" + data.sessionId;
-				console.log(data);
-			},
-			cache : false,
-			error : function(error) {
-				console.log(Error
-						+ "\nAjax request has failed. Registration Failed ");
-			}
-		});
-		
+
+
+
+	},likeAudio = function(audio_id,status){
+		var sessionId = getCookie("sessionId");
+		var jsonObject={
+									"sessionId":sessionId,
+									"audioId":audio_id,
+									"likeStatus":status};
+		if(status == 1){
+			Music4u.user.socket.emit('likes', jsonObject);
+		}else{
+			Music4u.user.socket.emit('unlikes', jsonObject);
+		}
+
+
 	},buildWall = function(){
 		var session_id = getCookie("sessionId");
 		$.ajax({
@@ -158,7 +151,7 @@ Music4u.user = function(window, document, undefined) {
 						+ "\nAjax request has failed. Registration Failed ");
 			}
 		});
-		
+
 	}, register = function() {
 		var email = $("#email").val();
 		var firstname = $("#firstname").val();
@@ -201,6 +194,7 @@ Music4u.user = function(window, document, undefined) {
 		login : login,
 		likeAudio : likeAudio,
 		buildWall:buildWall,
+		socket: socket,
 		logout : logout
 	};
 }(this, document);
@@ -256,16 +250,26 @@ function upload_file(){
 	// $('#uploadForm').submit(function() {
 	    // alert("jjjj");
 
-	      
+
 	        //Very important line, it disable the page refresh.
 	   // return false;
-	   // }); 
+	   // });
 }
 
-function like(){
-	Music4u.user.likeAudio();
+function like(aid){
+	console.log(aid);
+//	var like_count = $(this).attr("like-count");
+	//console.log(like_count);
+	$("."+aid+"_like").show();
+	$("."+aid+"_unlike").hide();
+	Music4u.user.likeAudio(aid,1);
 }
 
-
-
-
+function unlike(aid){
+	console.log(aid);
+	$("."+aid+"_like").hide()
+	$("."+aid+"_unlike").show();;
+//	var like_count = $(this).attr("like-count");
+	//console.log(like_count);
+	Music4u.user.likeAudio(aid,0);
+}

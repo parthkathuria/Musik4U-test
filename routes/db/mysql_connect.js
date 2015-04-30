@@ -46,7 +46,8 @@ function indexThisrow(callback, row)
 
 function insertUser(callback,firstname,lastname,email,confirm_password){
 
-	var sql = "INSERT INTO User (password, firstname, lastname, email) VALUES('"+ confirm_password + "','" + firstname + "','" + lastname + "','" + email + "')";
+	var pic = "/static/images/defaultavatar.png"
+	var sql = "INSERT INTO User (password, firstname, lastname, email,picture) VALUES('"+ confirm_password + "','" + firstname + "','" + lastname + "','" + email + "','"+ pic+ "')";
 	//console.log(sql);
 	pool.getConnection(function(err, connection){
 		connection.query(sql, function(err, results) {
@@ -60,7 +61,7 @@ function insertUser(callback,firstname,lastname,email,confirm_password){
 			//console.log(results);
 		});
 		connection.release();
-	});	
+	});
 }
 
 function validateUser(callback,email,password){
@@ -71,19 +72,20 @@ function validateUser(callback,email,password){
 		connection.query( sql,  function(err, rows){
 			if(err)	{
 				throw err;
-			}else{		  		
+			}else{
 				//console.log("DATA : "+JSON.stringify(rows));
-				callback(err, rows);		  		
+				callback(err, rows);
 			}
-		});		  
+		});
 		connection.release();
-	});	
+	});
 }
 
 function getAudio(callback,userId){
 	//console.log(userId);
-	var sql = "SELECT a.*, u.* , case when l.like_value = '1' then 'active' else '' end as my_like from audio as a join user as u on u.userId = a.userId left join likes_table as l on l.audio_id = a.audio_id where a.userId = "+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
+	//var sql = "SELECT a.*, u.* , case when l.like_value = '1' then 'active' else '' end as my_like from audio as a join user as u on u.userId = a.userId left join likes_table as l on l.audio_id = a.audio_id where a.userId = "+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
 	//var sql = "SELECT * from audio as a join user as u on u.userId = a.userId where a.userId ="+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
+	var sql = "SELECT a.*, u.*,l.audio_id,l.user_id,l.like_value , case when l.like_value = '1' and l.user_id="+userId+" then 'show' else 'none' end as audiolike, case when (l.like_value and l.user_id !="+userId+") or (l.user_id is null and l.like_value is null) then 'show' else 'none' end as unlike from audio as a join user as u on u.userId = a.userId left join likes_table as l on l.user_id = a.userId where a.userId = "+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
 	//console.log(sql);
 	pool.getConnection(function(err,connection){
 		connection.query(sql,function(err,rows){
@@ -110,7 +112,7 @@ function getHomeAudioLatest(callback, slimit, elimit){
 					callback(err, JSON.stringify(rows));
 				}
 			}
-		});		  
+		});
 		connection.release();
 	});
 }
@@ -125,7 +127,7 @@ function getHomeAudioLatest(callback, slimit, elimit){
 		database: 'music4u'
 	});
 	var sql = "SELECT * FROM audio WHERE userId = '40' ";
-	
+
 	console.log("jibin");
 	connection.connect();
 	connection.query(sql, function(err, rows, fields) {
@@ -142,7 +144,7 @@ function getHomeAudioLatest(callback, slimit, elimit){
 
 	connection.end();
 	//return data;
-	
+
 }
 function get_data(rows){
 	console.log(rows);
@@ -190,16 +192,16 @@ function getHomeAudioTrendy(callback){
 										callback(err);
 									}
 								}
-							});	
+							});
 						}
-					});	
+					});
 				}
 				function afterAllTasks(err) {
 					//console.log("DATA : "+audios);
 					callback(err, audios);
 				}
 			}
-		});		  
+		});
 		connection.release();
 	});
 }
@@ -249,7 +251,7 @@ function audioUpload1(callback, userId, author, language, genre, producer, direc
 	var sql="insert into Audio(audioId,author,language, genre,producer,director, description,releaseDate,audioName,owner,audioFileLoc,lastModified) values (?,?,?,?,?,?,?,?,?,?,?,?)";
 
 	pool.getConnection(function(err, connection){
-		connection.query(sql, [audioId,author,language, genre,producer,director, description,releaseDate,audioName,owner,audioFileLoc,creationDate,lastModified], 
+		connection.query(sql, [audioId,author,language, genre,producer,director, description,releaseDate,audioName,owner,audioFileLoc,creationDate,lastModified],
 				function (err,rows,fields){
 			if (err) {
 				//console.log("ERROR: " + err.message);
@@ -273,7 +275,7 @@ function audioUpload1(callback, userId, author, language, genre, producer, direc
 								var jsonrow = JSON.stringify(row);
 								var rowId1 = jsonrow.audioId;
 								//console.log('json rowId : '+rowId1);
-								
+
 								elasticClient.create({
 									index: 'music4u',
 									type: 'musictype',
@@ -317,7 +319,7 @@ function insertAudio(data){
 			}
 		});
 		connection.release();
-	});	
+	});
 }
 
 function update_like(callback, data){
@@ -331,15 +333,15 @@ function update_like(callback, data){
 				throw err;
 				//console.log(err);
 			}
-			console.log(results);
+		//	console.log(results);
 			if(results.count == 0){
 				pool.getConnection(function(err, connection){
 				connection.query(sql_insert, function(err, results) {
 					if (err) {
 						throw err;
-						console.log(err);
+					//	console.log(err);
 					}
-					console.log(results);
+				//	console.log(results);
 				});
 				connection.release();
 				});
@@ -348,9 +350,9 @@ function update_like(callback, data){
 				connection.query(sql_update, function(err, results) {
 					if (err) {
 						throw err;
-						console.log(err);
+					//	console.log(err);
 					}
-					console.log(results);
+				//	console.log(results);
 				});
 				connection.release();
 				});
@@ -380,12 +382,12 @@ function update_like(callback, data){
 			connection.release();
 		});
 	}*/
-	
-	
+
+
 }
 
 function getSearchedAudios(callback, keyword){
-	// elastic search 
+	// elastic search
 	//console.log('Keyword*********** : '+keyword);
 	elasticClient.search({
 		  index: 'music4u',
@@ -403,5 +405,5 @@ exports.getAudio = getAudio;
 exports.getHomeAudioLatest = getHomeAudioLatest;
 exports.getHomeAudioTrendy = getHomeAudioTrendy;
 exports.insertAudio = insertAudio;
-exports.getSearchedAudios = getSearchedAudios;   
+exports.getSearchedAudios = getSearchedAudios;
 exports.update_like = update_like;
