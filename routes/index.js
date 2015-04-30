@@ -68,6 +68,34 @@ router.get('/wall/:sessionId/getAudio',function(req,res){
 		}
 	},sessionId);
 });
+router.get('/wall/:sessionId/user',function(req,res){
+	var sessionId = req.params.sessionId;
+	console.log("userid: " + sessionId);
+	mysql.getMyProfile(function(err,results){
+		if(err){
+			throw err;
+			console.log(err);
+		}else{
+			if(results.length == 0)
+			{
+				var msg = "Not able to get data";
+				res.status(200).send({
+					Error : msg,
+					sessionId : req.params.sessionId,
+					no_audio:true
+					});
+			}
+			else
+			{
+
+				res.status(200).send({
+					user:results
+					});
+			}
+		}
+	},sessionId);
+});
+
 router.get('/wall/:sessionId', function(req, res) {
 	//console.log("jibin");
 	//console.log(req);

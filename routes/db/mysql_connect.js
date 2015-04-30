@@ -16,6 +16,8 @@ var elasticClient = new elasticsearch.Client({
 	log: 'trace'
 });
 
+
+
 function indexThisrow(callback, row)
 {
 	var rowId = row[0].audioId;
@@ -70,6 +72,23 @@ function validateUser(callback,email,password){
 	//console.log(sql);
 	pool.getConnection(function(err, connection){
 		connection.query( sql,  function(err, rows){
+			if(err)	{
+				throw err;
+			}else{
+				//console.log("DATA : "+JSON.stringify(rows));
+				callback(err, rows);
+			}
+		});
+		connection.release();
+	});
+}
+
+function getMyProfile(callback,userId){
+	//console.log("Email: " + email + "Password: " + password);
+	var sql = "SELECT * from user where userId = ?";
+	//console.log(sql);
+	pool.getConnection(function(err, connection){
+		connection.query( sql,[userId],  function(err, rows){
 			if(err)	{
 				throw err;
 			}else{

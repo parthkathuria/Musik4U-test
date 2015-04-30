@@ -84,6 +84,25 @@ Music4u.user = function(window, document, undefined) {
 				console.log("Ajax request has failed. logout failed");
 			}
 		});
+	}, logout = function() {
+		var data = {
+			"email" : "jibin"
+		}
+		$.ajax({
+			type : "GET",
+			url : "/logout",
+			data : data,
+			dataType : 'JSON',
+			success : function(data) {
+				//set cookie after login
+				unsetkCookie("sessionId");
+
+			},
+			cache : false,
+			error : function(error) {
+				console.log("Ajax request has failed. logout failed");
+			}
+		});
 	}, audioUpload = function() {
 		var session_id = getCookie("sessionId");
 		var title = $("#title").val();
@@ -115,6 +134,27 @@ Music4u.user = function(window, document, undefined) {
 	            }
 	    });
 
+
+
+	}, getProfile = function() {
+		var session_id = getCookie("sessionId");
+
+
+		$.ajax({
+		type : "GET",
+		url : "/wall/"+session_id+"/user",
+		data : session_id,
+		dataType : 'JSON',
+		success : function(data) {
+			//set cookie after login
+			console.log(data);
+
+		},
+		cache : false,
+		error : function(error) {
+			console.log("Ajax request has failed. logout failed");
+		}
+	});
 
 
 	},likeAudio = function(audio_id,status){
@@ -192,6 +232,7 @@ Music4u.user = function(window, document, undefined) {
 		register : register,
 		audioUpload: audioUpload,
 		login : login,
+		getProfile:getProfile,
 		likeAudio : likeAudio,
 		buildWall:buildWall,
 		socket: socket,
@@ -273,3 +314,10 @@ function unlike(aid){
 	//console.log(like_count);
 	Music4u.user.likeAudio(aid,0);
 }
+
+$(document).ready(function () {
+	var socket = io.connect('http://localhost:3000');
+	Music4u.user.socket = socket;
+	Music4u.user.getProfile();
+
+});
