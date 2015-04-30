@@ -199,7 +199,7 @@
                                                     </div>
                                                     <div class="padder-v row">
                                                         <div class="col-sm-11">
-                                                        <span class="thumb-lg m-t-n-sm m-b-n-sm m-l-sm">
+                                                        <span class="thumb-lg m-t-n-sm m-b-n-sm m-l-sm" style="width:100px; height:100px">
                                 								<img src="{{albumArt}}" alt="...">
                             								</span>
                                                             <!--<a href="#"><img src="{{albumArt}}" alt="" style="width:100px;height:100px"></a>-->
@@ -209,7 +209,7 @@
                                                         <div class="col-sm-12">
                                                         <label class="col-lg-10 control-label"><b>{{title}}</b></label><br>
                                                         <small class="text-muted">{{artist}}</small>
-                                                            <audio controls>
+                                                            <audio controls style="width:250px">
                                                                 <source src="{{audioFile}}" type="audio/mpeg">
                                                                 Your browser does not support the audio element.
                                                             </audio>

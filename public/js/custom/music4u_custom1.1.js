@@ -130,6 +130,10 @@ Music4u.user = function(window, document, undefined) {
 
 	            success: function(response) {
 	                     //console.log(response);
+											$('#uploadMsg').modal({
+												  backdrop: 'static',
+												  keyboard: false
+												})
 	                     $('#uploadMsg').modal('toggle');
 	            }
 	    });
