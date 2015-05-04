@@ -2,8 +2,8 @@
 <html lang="en" class="app">
 <head>
   <meta charset="utf-8" />
-  <title>Musik | Web Application</title>
-  <meta name="description" content="app, web app, responsive, admin dashboard, admin, flat, flat ui, ui kit, off screen nav" />
+  <title>Musik4U </title>
+  <meta name="description" content="An audio platform that enables music enthusiats to upload and share the passion in music. Live the life in music.Explore more!" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <link rel="stylesheet" href="js/jPlayer/jplayer.flat.css" type="text/css" />
   <link rel="stylesheet" href="css/bootstrap.css" type="text/css" />
@@ -56,16 +56,16 @@
         <div class="navbar-right">
             <ul class="nav navbar-nav hidden-xs nav-user user">
                 <li>
-                    <a href="/explore">Explore</a>
+                    <a href="/explore">{{explore}}</a>
                 </li>
                 <li>
-                    <a href="/signin" class="">Sign in</a>
+                    <a href="/signin" class="">{{Sign_in}}</a>
                 </li>
                 <li>
-                    <a href="/signup" class="">Sign up</a>
+                    <a href="/signup" class="">{{Sign_up}}</a>
                 </li>
             </ul>
-        </div>  
+        </div>
     </header>
 	</section>
     <section>
@@ -76,7 +76,9 @@
         <section id="content">
           <section class="vbox">
             <section class="scrollable wrapper">
+            	<h4>Nourish your ears with the music you love.</h4>
                 <img src="images/banner1.jpg" class="img-rounded img-responsive" />
+                <p>Live the life in music.Explore more!</p>
             </section>
           </section>
           <a href="#" class="hide nav-off-screen-block" data-toggle="class:nav-off-screen,open" data-target="#nav,html"></a>
@@ -84,6 +86,15 @@
       </section>
     </section>
   </section>
+  <footer id="footer">
+<div class="text-center padder clearfix">
+<h3>like our page in social medias.</h3>
+<a href="https://www.facebook.com/musik4uConnect">Facebook-Musik4U</a>
+<p>
+<small><br>&copy; 2015</small>
+</p>
+</div>
+</footer>
   <script src="js/jquery.min.js"></script>
   <!-- Bootstrap -->
   <script src="js/bootstrap.js"></script>

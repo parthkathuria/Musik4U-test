@@ -1,22 +1,44 @@
 /**
  * New node file
  */
+
 var mysql =  require('mysql');
+var elasticsearch = require('elasticsearch');
+var redis = require('redis');
+var client = redis.createClient(6379, "localhost");
 var connection =  mysql.createConnection({
 	host : "localhost",
 	user :"root",
-	password:"sample123",
+	password:"",
 	database:"music4u"
 
 });
 
+/*var elasticClient = new elasticsearch.Client({
+	host: 'localhost:9200',
+	log: 'trace'
+});*/
+
 
 exports.input = function(socket) {
 
-	/*client.set(2, socket.id, function(err) {
-		if (err) throw err;
-		console.log("User socket is now" + socket.id);
-	});*/
+	socket.on('userId',function(msg){
+		client.set(msg.userId, socket.id, function(err) {
+			if (err) throw err;
+			console.log("User socket is now: " + socket.id);
+		});
+		client.get(msg.userId,function(err,id){
+			console.log("Redis:" + id);
+			if(err) throw err;
+		})
+	});
+
+socket.on('clearUserId',function(msg){
+	client.del(msg.userId,function(err){
+		if(err) throw err;
+		console.log("redis key deleted: " + msg.userId);
+	});
+});
 
 
 	console.log('user connected' +socket.id);
@@ -65,7 +87,28 @@ exports.input = function(socket) {
 				connection.query(likeSql, [userId,audioId,likeStatus], function (err,numberOfLikes){
 					if(err) throw err;
 					else{
-						socket.emit('likes', numberOfLikes);
+						/*var numOfLikes = numberOfLikes;
+						elasticClient.update({
+							index: 'music4u',
+							type: 'musictype',
+							id: audioId,
+							body: {
+								script: 'ctx._source.num_likes += 1',
+//							    upsert: {
+//							    	num_likes: 1
+//							    }
+							}
+						}, function (err, results){
+							if(err)
+								throw err;
+							else
+							{
+								console.log("After re-insert: "+results);
+								console.log("Number of likes ##### : "+numOfLikes);
+								socket.emit('likes', numOfLikes);
+							}
+						});*/
+						socket.emit('likes', numOfLikes);
 					}
 				});
 			};
@@ -97,7 +140,28 @@ exports.input = function(socket) {
 				connection.query(likeSql, [userId,audioId,likeStatus], function (err,numberOfLikes){
 					if(err) throw err;
 					else{
-						socket.emit('likes', numberOfLikes);
+						/*var numOfLikes = numberOfLikes;
+						elasticClient.update({
+							index: 'music4u',
+							type: 'musictype',
+							id: audioId,
+							body: {
+								script: 'ctx._source.num_likes -= 1',
+//							    upsert: {
+//							    	num_likes: 1
+//							    }
+							}
+						}, function (err, results){
+							if(err)
+								throw err;
+							else
+							{
+								console.log("After re-insert: "+results);
+								console.log("Number of likes ##### : "+numOfLikes);
+								socket.emit('likes', numOfLikes);
+							}
+						});*/
+						socket.emit('likes', numOfLikes);
 					}
 				});
 			};
@@ -107,30 +171,28 @@ exports.input = function(socket) {
 	});
 
 	socket.on('follows', function(msg){
-		console.log('message:'+msg.sessionId+msg.followerId +msg.followeeId);
+		console.log('message:'+msg.followerID+msg.profileId);
 		// var userId=getUserId(msg.sessionId);
 
-		var userId=2;
+		var userId= msg.userId;
 		/*client.set(userId, socket.id, function(err) {
 			if (err) throw err;
 			console.log("User socket is now" + socket.id);
 		});*/
-		var followeeId=msg.followeeId;
-		var followStatus=msg.followStatus;
+		var followerId = msg.followerId;
+		var sql="insert into followerlist(userId,followerId) values (?,?)";
 
-		var sql="insert into followerlist(followerId,followeeId,status) values (?,?,?)";
-
-		connection.query(sql, [userId,followeeId,followStatus], function (err,rows,fields){
+		connection.query(sql, [userId,followerId], function (err,rows,fields){
 			if(err) throw err;
-			else{
-				var followSql="select count(*) as numberOfFollowers from followerlist where followerId=?  and status=1";
-				connection.query(followSql, [userId], function (err,numberOfFollowers){
-					if(err) throw err;
-					else{
-						socket.emit('follows', numberOfFollowers);
-					}
-				});
-			};
+			// else{
+			// 	var followSql="select count(*) as numberOfFollowers from followerlist where followerId=?  and status=1";
+			// 	connection.query(followSql, [userId], function (err,numberOfFollowers){
+			// 		if(err) throw err;
+			// 		else{
+			// 			socket.emit('follows', numberOfFollowers);
+			// 		}
+			// 	});
+			// };
 
 		});
 
@@ -140,27 +202,25 @@ exports.input = function(socket) {
 		console.log('message:'+msg.sessionId+msg.audioId);
 		// var userId=getUserId(msg.sessionId);
 
-		var userId=2;
+		var userId= msg.userId;
 		/*client.set(userId, socket.id, function(err) {
 			if (err) throw err;
 			console.log("User socket is now" + socket.id);
 		});*/
-		var followStatus=msg.followStatus;
-		var followeeId=msg.followeeId;
+		var followerId = msg.followerId;
+		var sql="delete from followerlist where userId=? and followerId=?";
 
-		var sql="update followerlist set status= 0 where followeeId=? and followerId=?";
-
-		connection.query(sql, [followeeId ,userId], function (err,rows,fields){
+		connection.query(sql, [userId ,followerId], function (err,rows,fields){
 			if(err) throw err;
-			else{
-				var likeSql="select count(*) as numberOfFollowers from followerlist where followerId=?  and status=1";
-				connection.query(likeSql, [userId], function (err,numberOfLikes){
-					if(err) throw err;
-					else{
-						socket.emit('follows', numberOfFollowers);
-					}
-				});
-			};
+			// else{
+			// 	var likeSql="select count(*) as numberOfFollowers from followerlist where followerId=?";
+			// 	connection.query(likeSql, [userId], function (err,numberOfLikes){
+			// 		if(err) throw err;
+			// 		else{
+			// 			socket.emit('follows', numberOfFollowers);
+			// 		}
+			// 	});
+			// };
 
 		});
 

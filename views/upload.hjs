@@ -2,8 +2,8 @@
 <html lang="en" class="app">
 <head>
     <meta charset="utf-8" />
-    <title>Musik | Upload MusicK</title>
-    <meta name="description" content="app, web app, responsive, admin dashboard, admin, flat, flat ui, ui kit, off screen nav" />
+    <title>Upload favorite mp3 album or audio of different genres</title>
+    <meta name="description" content="Logged in users can upload the artist name, description of the mp3 file, genre of the music, image for the audio file, and the file. responsive web app" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="stylesheet" href="/static/js/jPlayer/jplayer.flat.css" type="text/css" />
     <link rel="stylesheet" href="/static/css/bootstrap.css" type="text/css" />
@@ -72,7 +72,6 @@
                             <span class="text">Upload</span>
                         </a>
                     </li>
-
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle bg clear" data-toggle="dropdown">
                             <span class="thumb-sm avatar pull-right m-t-n-sm m-b-n-sm m-l-sm">
@@ -151,9 +150,10 @@
                                         <li>
                                             <a href="/wall/{{sessionId}}/profile">Profile</a>
                                         </li>
+
                                         <li class="divider"></li>
                                         <li>
-                                            <a href="#">Logout</a>
+                                            <a href="modal.lockme.html" data-toggle="ajaxModal">Logout</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -194,28 +194,28 @@
                                                             <div class="col-lg-10">
                                                                 <select name="genre" id="genre" class="form-control m-b" required>
                                                                     <option value="0">--Select Genre--</option>
-                                                                    <option value="1">acoustic</option>
-                                                                    <option value="2">ambient</option>
-                                                                    <option value="3">blues</option>
-                                                                    <option value="4">classical</option>
-                                                                    <option value="5">country</option>
-                                                                    <option value="6">electronic</option>
-                                                                    <option value="7">emo</option>
-                                                                    <option value="8">folk</option>
-                                                                    <option value="9">hardcore</option>
-                                                                    <option value="10">hip hop</option>
-                                                                    <option value="11">indie</option>
-                                                                    <option value="12">jazz</option>
-                                                                    <option value="13">latin</option>
-                                                                    <option value="14">metal</option>
-                                                                    <option value="15">pop</option>
-                                                                    <option value="16">pop punk</option>
-                                                                    <option value="17">punk</option>
-                                                                    <option value="18">reggae</option>
-                                                                    <option value="19">rnb</option>
-                                                                    <option value="20">rock</option>
-                                                                    <option value="21">soul</option>
-                                                                    <option value="22">world</option>
+                                                                    <option value="acoustic">acoustic</option>
+                                                                    <option value="ambient">ambient</option>
+                                                                    <option value="blues">blues</option>
+                                                                    <option value="classical">classical</option>
+                                                                    <option value="country">country</option>
+                                                                    <option value="electronic">electronic</option>
+                                                                    <option value="emo">emo</option>
+                                                                    <option value="folk">folk</option>
+                                                                    <option value="hardcore">hardcore</option>
+                                                                    <option value="hip hop">hip hop</option>
+                                                                    <option value="indie">indie</option>
+                                                                    <option value="jazz">jazz</option>
+                                                                    <option value="latin">latin</option>
+                                                                    <option value="metal">metal</option>
+                                                                    <option value="pop">pop</option>
+                                                                    <option value="pop punk">pop punk</option>
+                                                                    <option value="punk">punk</option>
+                                                                    <option value="reggae">reggae</option>
+                                                                    <option value="rnb">rnb</option>
+                                                                    <option value="rock">rock</option>
+                                                                    <option value="soul">soul</option>
+                                                                    <option value="world">world</option>
                                                                 </select>
                                                             </div>
                                                         </div>

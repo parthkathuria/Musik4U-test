@@ -15,6 +15,7 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var wall = require('./routes/wall');
+
 var client = redis.createClient(6379, "localhost");
 var app = express();
 //io = require('socket.io').listen();
