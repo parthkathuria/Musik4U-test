@@ -5,48 +5,78 @@ var fs = require('fs');
 var crypto = require('crypto');
 var redis = require('redis');
 var session = require('express-session');
+var S = require('string');
 var redisStore = require('connect-redis')(session);
 var client = redis.createClient(6379, "localhost");
 var multer = require('multer');
 var Localize = require('localize');
+var requestLanguage = require('express-request-language');
 var done = false;
 var usrID = "";
 //var moment = require('moment');
 var moment = require('moment-timezone');
 moment().tz("America/Los_Angeles").format();
 
-
+//console.log(req.language);
 var myLocalize = new Localize({
     "Explore": {
-        "es": "Pruebas...",
-        "sr": "тестирање..."
+        "es": "Pruebas", //spanish
+		"zh": "探索", //chinese
+        "sr": "тестирање" //Serbian
     },
-		"Sign in": {
+	"Sign in": {
         "es": "jsckjcnk",
+		"zh": "登出",
         "sr": "fdfdgv"
     },
-		"Sign up": {
+	"Sign up": {
         "es": "dksdkbcnk",
+		"zh": "登入",
         "sr": "okoko"
     },
-    "Substitution: $[1]": {
-        "es": "Sustitución: $[1]",
-        "sr": "замена: $[1]"
+    "Search": {
+        "es": "замена",
+		"zh": "搜索",
+        "sr": "замена"
+    },
+	"Live the life in music Explore more": {
+        "es": "dksdkbcnk",
+		"zh": "鲜活的生命在音乐探索更多！",
+        "sr": "okoko"
     }
 });
 
 /* GET home page. */
 router.get('/', function(req, res) {
-//	myLocalize.setLocale("es");
 
+	console.log(req.headers["accept-language"]);
+	set_lang(req.headers["accept-language"]);
+//	myLocalize.setLocale("es");
 	var lang = {
 		"explore":myLocalize.translate("Explore"),
 		"Sign_up":myLocalize.translate("Sign up"),
 		"Sign_in":myLocalize.translate("Sign in"),
+		"tag_line":myLocalize.translate("Live the life in music Explore more")
 	};
 	//console.log(myLocalize.translate("Testing..."));
 	res.render('index',lang);
 });
+
+function set_lang(lang){
+
+	var expression = S(lang).left(2).s;
+	switch(expression) {
+    case 'es':
+        myLocalize.setLocale("es");
+        break;
+    case 'zh':
+        myLocalize.setLocale("zh");
+        break;
+    default:
+        myLocalize.setLocale("en");
+}
+	
+};
 
 router.get('/signin', function(req, res) {
 	res.render('signin');
@@ -116,25 +146,13 @@ router.get('/wall/:sessionId', function(req, res) {
 			throw err;
 			console.log(err);
 		}else{
-			if(results.length == 0)
-			{
-				var msg = "Not able to get data";
-				res.status(200).render('wall',{
-					Error : msg,
-					sessionId : req.params.sessionId,
-					no_audio:true
-					});
-			}
-			else
-			{
-				console.log(results);
-
-				res.status(200).render('wall',{
-					audio:results,
-					no_audio:false,
-					sessionId:req.params.sessionId
-					});
-			}
+			//console.log(results);
+				res.status(200).render('wall',results);
+//				res.status(200).render('wall',{
+//					audio:results,
+//					no_audio:false,
+//					sessionId:req.params.sessionId
+//					});
 		}
 	},sessionId);
 
@@ -160,15 +178,16 @@ router.get('/wall/:sessionId/audio/:audioId',function(req,res){
 			}
 			else
 			{
-				console.log(results);
-				res.status(200).render('audio',{
-					audio:results,
-					no_audio:false,
-					sessionId:req.params.sessionId
-					});
+				//console.log(results);
+				res.status(200).render('audio',results);
+//				res.status(200).render('audio',{
+//					audio:results,
+//					no_audio:false,
+//					sessionId:req.params.sessionId
+//					});
 			}
 		}
-	},audioId);
+	},audioId,sessionId	);
 });
 
 router.get('/search', function(req, res) {
@@ -198,9 +217,18 @@ router.get('/search', function(req, res) {
 });
 
 router.get('/wall/:sessionId/upload', function(req, res) {
-	res.render('upload', {
-		sessionId : req.params.sessionId,
-	});
+	var userId = req.params.sessionId;
+	mysql.getUserDetails(function (err,results) {
+		if(err){
+			throw err;
+		}else{
+			res.render('upload', {
+				'sessionId' : req.params.sessionId,
+				'userData' : results
+			});
+		}
+	},userId);
+	
 	/*getValueOfSessionId(function(userId) {
 		console.log(userId);
 
@@ -261,14 +289,14 @@ router.get("/wall/:sessionId/profile/:profileId",function(req,res){
 			if(results.length ==0){
 				//res.status(404);
 			}else{
-				console.log(results);
+				//console.log(results);
 				//return results;
-				var data = {
-					sessionId : userId,
-					userDetails : results
-				}
+//				var data = {
+//					sessionId : userId,
+//					userDetails : results
+//				}
 				//console.log("data in json format " + JSON.stringify(data));
-				console.log("profile data - " + results);
+				//console.log("profile data - " + results);
 				//console.log(userDetails.num_following.numberOfFollowing);
 				res.render('profile',results);
 			}
@@ -311,10 +339,11 @@ router.post("/wall/:sessionId/profile/:profileId",multer({
 	res.status(200).send("profile updated");
 });
 
-router.post("/wall/:sessionId/audio/:audioId/like",function(req,res){
+router.get("/wall/:sessionId/audio/:audioId/comments",function(req,res){
 	var userId = req.params.sessionId;
 	var audioId = req.params.audioId;
-	mysql.update_like(function(err,results){
+	//console.log(audioId);
+	mysql.getCommentsByAudio(function(err,results){
 		if(err){
 			throw err;
 			console.log(err);
@@ -331,10 +360,45 @@ router.post("/wall/:sessionId/audio/:audioId/like",function(req,res){
 					audio:JSON.stringify(results)
 				});*/
 				console.log(results);
-				res.status(200).send(JSON.stringify(results));
+				res.status(200).send(results);
 			}
 		}
 	},audioId);
+});
+
+router.post("/wall/:sessionId/audio/:audioId/comments",function(req,res){
+	var userId = req.params.sessionId;
+	var audioId = req.params.audioId;
+	var comment = req.body.comment;
+	var now = moment().tz("America/Los_Angeles").toISOString();
+	var jsonObj = {
+		'audio_id' : audioId,
+		'user_id' : userId,
+		'comment' : comment,
+		'created_id' : now 
+	};
+	console.log(jsonObj);
+	mysql.postCommentsByAudio(function(err,results){
+		if(err){
+			throw err;
+			console.log(err);
+		}else{
+			if(results.length == 0)
+			{
+				var msg = "Not able to get data";
+				res.end({Error : msg});
+			}
+			else
+			{
+				//var data = {audio:results};
+				/*res.status(200).send({
+					audio:JSON.stringify(results)
+				});*/
+				console.log(results);
+				res.status(200).send(results);
+			}
+		}
+	},jsonObj);
 });
 
 function getValueOfSessionId(callback, sessionId) {

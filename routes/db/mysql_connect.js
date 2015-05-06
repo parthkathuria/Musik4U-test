@@ -22,7 +22,7 @@ var pool = mysql.createPool({
 
 function insertUser(callback,firstname,lastname,email,confirm_password){
 
-	var pic = "/static/images/defaultavatar.png"
+	var pic = "/static/images/defaultavatar.png";
 	var sql = "INSERT INTO user (password, firstname, lastname, email,picture) VALUES('"+ confirm_password + "','" + firstname + "','" + lastname + "','" + email + "','"+ pic+ "')";
 	console.log(sql);
 	pool.getConnection(function(err, connection){
@@ -80,7 +80,7 @@ function updateProfile(data){
 			if(err){
 				throw err;
 			}else{
-
+				console.log(rows);
 			}
 		});
 		connection.release();
@@ -91,7 +91,7 @@ function getAudio(callback,userId){
 	//console.log(userId);
 	//var sql = "SELECT a.*, u.* , case when l.like_value = '1' then 'active' else '' end as my_like from audio as a join user as u on u.userId = a.userId left join likes_table as l on l.audio_id = a.audio_id where a.userId = "+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
 	//var sql = "SELECT * from audio as a join user as u on u.userId = a.userId where a.userId ="+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
-	var sql = "SELECT a.audio_id as jibin, a.*, u.*,l.audio_id,l.user_id,l.like_value , case when l.like_value = '1' and l.user_id="+userId+" then 'show' else 'none' end as audiolike, case when (l.like_value and l.user_id !="+userId+") or (l.user_id is null and l.like_value is null) then 'show' else 'none' end as unlike from audio as a join user as u on u.userId = a.userId left join likes_table as l on l.user_id = a.userId where a.userId = "+userId+" or a.userId in (select f.followerId from followerlist as f where f.userId = "+userId+") order by a.created_at DESC";
+	var sql = "SELECT a.*, u.firstname,u.lastname,u.picture, count(l.like_id) as likeCount FROM music4u.audio as a join user as u left outer join likes_table as l on a.userId = u.userId and a.audio_id = l.audio_id where a.userId = "+userId+" OR a.userId IN(select f.userId from followerlist as f where f.followerId = "+userId+") group by a.audio_id order by a.created_at DESC";
 	//console.log(sql);
 	pool.getConnection(function(err,connection){
 		connection.query(sql,function(err,rows){
@@ -99,17 +99,57 @@ function getAudio(callback,userId){
 				throw err;
 			}else{
 				//console.log(JSON.stingify(rows));
-				callback(err,rows);
+				var audio = rows;				
+				getUserDetails(function (err,results) {
+					if(err){
+						throw err;
+					}else{
+						var userData = results;
+						if(audio.length == 0){
+							var jsonObj = {
+								'audio' : audio,
+								'userData': userData,
+								'sessionId' : userId,
+								'no_audio' : true
+							};
+							callback(err,jsonObj);
+						}else{
+							var jsonObj = {
+								'audio' : audio,
+								'userData': userData,
+								'sessionId' : userId,
+								'no_audio' : false
+							};
+							callback(err,jsonObj);
+						}
+						
+					}
+				},userId);
 			}
 		});
+		connection.release;
 	});
 }
 
-function getAudioById(callback,audioId){
+function getUserDetails(callback,userId) {
+	var sql = "select firstname,lastname,picture from user where userId = "+userId;
+	pool.getConnection(function (err,connection) {
+		connection.query(sql,function(err,results){
+			if(err){
+			throw err;
+			}else{
+				callback(err,results);
+			}
+		});
+		connection.release;
+	});
+}
+
+function getAudioById(callback,audioId,userId){
 	//console.log(userId);
 	//var sql = "SELECT a.*, u.* , case when l.like_value = '1' then 'active' else '' end as my_like from audio as a join user as u on u.userId = a.userId left join likes_table as l on l.audio_id = a.audio_id where a.userId = "+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
 	//var sql = "SELECT * from audio as a join user as u on u.userId = a.userId where a.userId ="+userId+" or a.userId in (select f.followerId from followerList as f where f.userId = "+userId+") order by a.created_at DESC";
-	var sql = "Select * from audio as a join user as u on a.userId=u.userId where a.audio_id = "+ audioId +" order by created_at DESC";
+	var sql = "Select a.*,u.firstname,u.lastname,u.picture, count(l.like_id) as likeCount from audio as a join user as u left outer join likes_table as l on a.userId=u.userId and a.audio_id = l.audio_id where a.audio_id = "+audioId+" group by a.audio_id order by created_at DESC";
 	//console.log(sql);
 	pool.getConnection(function(err,connection){
 		connection.query(sql,function(err,rows){
@@ -117,9 +157,39 @@ function getAudioById(callback,audioId){
 				throw err;
 			}else{
 				//console.log(JSON.stingify(rows));
-				callback(err,rows);
+				//callback(err,rows);
+				var audios = rows;
+				var sql_like = "select * from likes_table where audio_id= "+audioId+" and user_id = "+userId;
+				connection.query(sql_like,function (err,results) {
+					if(err){
+						throw err;
+					}else{
+						var audLike = false;
+						if(results.length != 0){
+							audLike = true;
+						}else{
+							audLike = false;
+						}
+						getUserDetails(function (err,result) {
+							if(err){
+								throw err;
+							}else{
+								var jsonData = {
+									'sessionId' : userId,
+									'audio' : audios,
+									'audLike' : audLike,
+									'userData': result,
+									'no_audio': false
+								};
+						callback(err,jsonData);
+							}
+						},userId);
+						
+					}
+				});
 			}
 		});
+		connection.release;
 	});
 }
 
@@ -140,6 +210,53 @@ function getHomeAudioLatest(callback, slimit, elimit){
 		});
 		connection.release();
 	});
+}
+
+function getCommentsByAudio(callback,audioId){
+	var sql = "select c.*, u.firstname,u.lastname, u.picture from comments as c join user as u on c.user_id = u.userId where c.audio_id = " + audioId + " order by c.created_at";
+	//console.log(sql);
+	pool.getConnection(function (err,connection) {
+		connection.query(sql, function(err,rows){
+			if(err){
+				throw err;
+			}else{
+				console.log(rows);
+				callback(err,rows);
+			}
+		});
+		connection.release();
+	});
+	
+}
+
+function postCommentsByAudio(callback,data){
+	var audio_id = data.audio_id;
+	var user_id = data.user_id;
+	var comment = data.comment;
+	var created_at = data.created_id;
+	var sql = "insert into comments (audio_id,user_id,created_at,comment) values(?,?,?,?)";
+	//console.log(created_at);
+	pool.getConnection(function (err,connection) {
+		connection.query(sql,[audio_id,user_id,created_at,comment], function(err,rows){
+			if(err){
+				throw err;
+			}else{
+				console.log(rows);
+				var comment_id = rows.insertId;
+				var sql_a = "select c.*, u.firstname,u.lastname, u.picture from comments as c join user as u on c.user_id = u.userId where c.comment_id = " + comment_id + " order by c.created_at ASC";
+				connection.query(sql_a,function (err,result) {
+					if(err){
+						throw err;
+					}else{
+						console.log(result);
+						callback(err,result);	
+					}
+				});
+			}
+		});
+		connection.release();
+	});
+	
 }
 
 function getHomeAudioTrendy(callback){
@@ -455,7 +572,7 @@ function getSearchedAudios(callback, keyword){
 
 exports.retrieveUserFollowers=function(callback, userId, profileId){
 	console.log("user id - " + userId + "profile id -" + profileId);
-	var selectSql="select * from audio where userId= ?";
+	var selectSql="select a.*, count(l.like_id) as likeCount from audio as a left outer join likes_table as l on a.audio_id = l.audio_id where a.userId= ? group by a.audio_id order by a.created_at DESC";
 	pool.getConnection(function(err, connection){
 		connection.query(selectSql, [profileId], function (err,results){
 			if (err) {
@@ -516,8 +633,11 @@ exports.retrieveUserFollowers=function(callback, userId, profileId){
 												if(userId == profileId){
 													selfFollow = false;
 												}
-												//console.log(audios);
-													var json_arr = {'sessionId':userId,
+												getUserDetails(function (err,result) {
+													if(err){
+														throw err;
+													}else{
+														var json_arr = {'sessionId':userId,
 																		'audio':audios,
 																		'num_followers':follower,
 																		'num_following':numFollowing,
@@ -525,9 +645,14 @@ exports.retrieveUserFollowers=function(callback, userId, profileId){
 																		'follow': follow,
 																		'selfFollow': selfFollow,
 																		'no_audio' : no_audio,
-																		'profileId' : profileId};
-												//callback(err, "{'audio':"+audios+",'num_followers':"+follower+",'num_following':"+numFollowing+",'user_details':"+userDetails+"}");
-												callback(err,json_arr);
+																		'profileId' : profileId,
+																		'userData' : result
+																		};
+														callback(err,json_arr);
+													}
+												},userId);
+												//console.log(audios);
+													
 											}
 
 										});
@@ -556,3 +681,6 @@ exports.getSearchedAudios = getSearchedAudios;
 exports.update_like = update_like;
 exports.getMyProfile = getMyProfile;
 exports.updateProfile = updateProfile;
+exports.getCommentsByAudio = getCommentsByAudio;
+exports.postCommentsByAudio = postCommentsByAudio;
+exports.getUserDetails = getUserDetails;

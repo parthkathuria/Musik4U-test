@@ -76,19 +76,22 @@ socket.on('clearUserId',function(msg){
 		});*/
 		var audioId=msg.audioId;
 		var userId=msg.sessionId;
-		var likeStatus=msg.likeStatus;
 
-		var sql="insert into likes_table(user_id,audio_id,like_value) values (?,?,?)";
+		var sql="insert into likes_table(user_id,audio_id) values (?,?)";
 
-		connection.query(sql, [userId,audioId,likeStatus], function (err,rows,fields){
+		connection.query(sql, [userId,audioId], function (err,rows,fields){
 			if(err) throw err;
 			else{
-				var likeSql="select count(*) as numberOfLikes from likes_table where user_id=? and audio_id=? and like_value=1";
-				connection.query(likeSql, [userId,audioId,likeStatus], function (err,numberOfLikes){
+				var likeSql="select count(*) as numberOfLikes from likes_table where user_id=? and audio_id=?";
+				connection.query(likeSql, [userId,audioId], function (err,numberOfLikes){
 					if(err) throw err;
 					else{
-						/*var numOfLikes = numberOfLikes;
-						elasticClient.update({
+						var numOfLikes = numberOfLikes;
+						var data = {
+							'numOfLikes':numOfLikes,
+							'userId' : userId
+						}
+						/*elasticClient.update({
 							index: 'music4u',
 							type: 'musictype',
 							id: audioId,
@@ -108,7 +111,7 @@ socket.on('clearUserId',function(msg){
 								socket.emit('likes', numOfLikes);
 							}
 						});*/
-						socket.emit('likes', numOfLikes);
+						socket.emit('likes', data);
 					}
 				});
 			};
@@ -117,31 +120,33 @@ socket.on('clearUserId',function(msg){
 
 	});
 
-	socket.on('unlikes', function(msg){
+		socket.on('unlikes', function(msg){
 		console.log('message unlikes:'+msg.sessionId+msg.audioId);
 		// var userId=getUserId(msg.sessionId);
 
-		var userId=2;
 		/*client.set(userId, socket.id, function(err) {
 			if (err) throw err;
 			console.log("User socket is now" + socket.id);
 		});*/
 		var audioId=msg.audioId;
 		var userId=msg.sessionId;
-		var likeStatus=msg.likeStatus;
 
 		var sql="delete from likes_table where audio_id=? and user_id=?";
 
 		connection.query(sql, [audioId,userId], function (err,rows,fields){
-			console.log("jibin");
+			//console.log("jibin");
 			if(err) throw err;
 			else{
-				var likeSql="select count(*) as numberOfLikes from likes_table where user_id=? and audio_id=? and like_value=1";
-				connection.query(likeSql, [userId,audioId,likeStatus], function (err,numberOfLikes){
+				var likeSql="select count(*) as numberOfLikes from likes_table where user_id=? and audio_id=?";
+				connection.query(likeSql, [userId,audioId], function (err,numberOfLikes){
 					if(err) throw err;
 					else{
-						/*var numOfLikes = numberOfLikes;
-						elasticClient.update({
+						var numOfLikes = numberOfLikes;
+						var data = {
+							'numOfLikes':numOfLikes,
+							'userId' : userId
+						}
+						/*elasticClient.update({
 							index: 'music4u',
 							type: 'musictype',
 							id: audioId,
@@ -161,7 +166,7 @@ socket.on('clearUserId',function(msg){
 								socket.emit('likes', numOfLikes);
 							}
 						});*/
-						socket.emit('likes', numOfLikes);
+						socket.emit('unlikes', data);
 					}
 				});
 			};
